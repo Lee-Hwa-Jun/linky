@@ -6,5 +6,6 @@ app_name = "links"
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("<slug:slug>/go/<int:link_id>/", views.track_link, name="link_redirect"),
     path("<slug:slug>/", views.landing, name="profile"),
 ]

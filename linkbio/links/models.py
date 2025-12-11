@@ -39,6 +39,7 @@ class Link(models.Model):
     label = models.CharField(max_length=150)
     url = models.URLField()
     icon = models.CharField(max_length=80, blank=True, help_text="Optional emoji or icon text")
+    click_count = models.PositiveIntegerField(default=0)
     is_primary = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
