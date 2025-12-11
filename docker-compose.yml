@@ -7,10 +7,10 @@ services:
     volumes:
       - .:/app
       - staticfiles:/app/staticfiles
+      - db_data:/app/data
+      - app_logs:/var/log/linky
     expose:
       - "8000"
-    command: >
-      sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn linkbio.wsgi:application --bind 0.0.0.0:8000"
 
   nginx:
     image: nginx:1.25-alpine
@@ -26,3 +26,5 @@ services:
 
 volumes:
   staticfiles:
+  db_data:
+  app_logs:

@@ -13,4 +13,6 @@ COPY . .
 
 RUN python manage.py collectstatic --noinput || true
 
-CMD ["sh", "-c", "python manage.py migrate && gunicorn linkbio.wsgi:application --bind 0.0.0.0:8000"]
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
