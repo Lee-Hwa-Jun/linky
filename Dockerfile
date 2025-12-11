@@ -13,4 +13,4 @@ COPY . .
 
 RUN python manage.py collectstatic --noinput || true
 
-CMD ["sh", "-c", "python manage.py migrate && uvicorn linkbio.asgi:application --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "python manage.py migrate && gunicorn linkbio.wsgi:application --bind 0.0.0.0:8000"]
