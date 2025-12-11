@@ -38,12 +38,14 @@ Django로 구현한 링크 모음 페이지입니다. 관리자(admin)에서 프
    ```bash
    cp .env.example .env
    ```
+   - `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_PASSWORD`, `DJANGO_SUPERUSER_EMAIL`을 설정하면 컨테이너가 시작될 때 해당 계정이 없을 경우 자동으로 생성됩니다.
 2. Docker로 애플리케이션을 실행합니다.
    ```bash
    docker-compose up --build
    ```
    - 브라우저에서 http://localhost 로 접속합니다.
    - `SERVER_NAME` 환경 변수를 변경하면 nginx `server_name` 값이 함께 반영됩니다.
+   - SQLite 데이터베이스(`./data/db.sqlite3`)와 Django 로그(`/var/log/linky/linky.log`)는 Docker 볼륨으로 유지됩니다.
 
 ## 테스트
 ```bash
