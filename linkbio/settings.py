@@ -2,12 +2,14 @@
 Django settings for linkbio project.
 """
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'change-me-in-production'
-DEBUG = True
-ALLOWED_HOSTS: list[str] = []
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'change-me-in-production')
+DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
+ALLOWED_HOSTS_ENV = os.getenv('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS: list[str] = [host for host in ALLOWED_HOSTS_ENV.split(',') if host] if ALLOWED_HOSTS_ENV else []
 
 INSTALLED_APPS = [
     'django.contrib.admin',

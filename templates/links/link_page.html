@@ -2,30 +2,50 @@
 {% load static %}
 {% block title %}{{ profile.name }} 링크 모음{% endblock %}
 {% block content %}
+<div class="marquee" style="--accent: {{ profile.accent_color }};">
+  <div class="marquee__inner">
+    <p class="marquee__text">{{ profile.headline|default:"오늘도 멋진 하루 보내세요." }}</p>
+    <p class="marquee__text">{{ profile.headline|default:"오늘도 멋진 하루 보내세요." }}</p>
+  </div>
+</div>
+
 <section class="hero" style="--accent: {{ profile.accent_color }}; --btn-radius: {{ profile.button_radius }}px;">
   <div class="hero__background">
     {% if profile.background_url %}
-      <img src="{{ profile.background_url }}" alt="배경 이미지" />
+      <a href="{{ profile.background_url }}" target="_blank" rel="noopener noreferrer" class="hero__background-link" aria-label="배경 이미지 크게 보기">
+        <img src="{{ profile.background_url }}" alt="배경 이미지" />
+      </a>
     {% endif %}
+    <div class="hero__glow" aria-hidden="true"></div>
   </div>
   <div class="hero__card">
     <header class="hero__header">
       {% if profile.avatar_url %}
-        <img src="{{ profile.avatar_url }}" alt="{{ profile.name }}" class="hero__avatar" />
+        <a href="{{ profile.avatar_url }}" target="_blank" rel="noopener noreferrer" class="hero__avatar-link" aria-label="프로필 이미지 확인하기">
+          <img src="{{ profile.avatar_url }}" alt="{{ profile.name }}" class="hero__avatar" />
+        </a>
       {% endif %}
-      <div>
-        <p class="hero__headline">{{ profile.headline }}</p>
+      <div class="hero__identity">
+        <div class="hero__chip">{{ profile.name }}'s Space</div>
         <h1 class="hero__name">{{ profile.name }}</h1>
-        {% if profile.bio %}
-          <p class="hero__bio">{{ profile.bio }}</p>
-        {% endif %}
       </div>
+      {% if profile.bio %}
+        <p class="hero__bio">{{ profile.bio }}</p>
+      {% endif %}
     </header>
     <div class="hero__links">
       {% for link in links %}
-        <a class="hero__button {% if link.is_primary %}hero__button--primary{% endif %}" href="{{ link.url }}" target="_blank" rel="noreferrer">
-          {% if link.icon %}<span class="hero__icon">{{ link.icon }}</span>{% endif %}
-          <span>{{ link.label }}</span>
+        <a
+          class="hero__button {% if link.is_primary %}hero__button--primary{% endif %}"
+          href="{% url 'links:link_redirect' profile.slug link.id %}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <div class="hero__button-leading">
+            {% if link.icon %}<span class="hero__icon">{{ link.icon }}</span>{% endif %}
+            <span>{{ link.label }}</span>
+          </div>
+          <span class="hero__clicks"><i class="fa-solid fa-bolt"></i> {{ link.click_count }} 클릭</span>
         </a>
       {% empty %}
         <p class="hero__bio">추가된 링크가 없습니다. 관리자에서 링크를 등록해 주세요.</p>
