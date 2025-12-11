@@ -1,7 +1,11 @@
 server {
     listen 80;
+    listen 443 ssl;
 
-    server_name ${SERVER_NAME:-localhost};
+    server_name ${SERVER_NAME};
+
+    ssl_certificate     /etc/letsencrypt/live/codieduck.store/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/codieduck.store/privkey.pem;
 
     location /static/ {
         alias /app/staticfiles/;
