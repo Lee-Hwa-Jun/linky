@@ -11,10 +11,14 @@ class LinkInline(admin.TabularInline):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "is_active")
+    list_display = ("name", "slug", "is_active", "show_total_clicks")
     list_filter = ("is_active",)
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name", "headline")
+    fieldsets = (
+        (None, {"fields": ("name", "slug", "headline", "bio", "avatar", "background_url")}),
+        ("Display", {"fields": ("accent_color", "button_radius", "show_total_clicks", "is_active")}),
+    )
     inlines = [LinkInline]
 
 

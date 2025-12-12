@@ -4,9 +4,13 @@
 {% block content %}
 <div class="marquee" style="--accent: {{ profile.accent_color }};">
   <div class="marquee__inner">
-    <p class="marquee__text">{{ profile.headline|default:"오늘도 멋진 하루 보내세요." }}</p>
-    <p class="marquee__text">{{ profile.headline|default:"오늘도 멋진 하루 보내세요." }}</p>
-    <p class="marquee__text">{{ profile.headline|default:"오늘도 멋진 하루 보내세요." }}</p>
+    {% for _ in "12" %}
+      <div class="marquee__group">
+        {% for text in marquee_texts %}
+          <p class="marquee__text">{{ text }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
   </div>
 </div>
 
@@ -21,10 +25,10 @@
   </div>
   <div class="hero__card">
     <header class="hero__header">
-      {% if profile.avatar_url %}
-        <a href="{{ profile.avatar_url }}" target="_blank" rel="noopener noreferrer" class="hero__avatar-link" aria-label="프로필 이미지 확인하기">
-          <img src="{{ profile.avatar_url }}" alt="{{ profile.name }}" class="hero__avatar" />
-        </a>
+      {% if profile.avatar %}
+        <div class="hero__avatar-link" aria-label="프로필 이미지">
+          <img src="{{ profile.avatar.url }}" alt="{{ profile.name }}" class="hero__avatar" />
+        </div>
       {% endif %}
       <div class="hero__identity">
         <div class="hero__chip">{{ profile.name }}'s Space</div>
@@ -32,6 +36,11 @@
       </div>
       {% if profile.bio %}
         <p class="hero__bio">{{ profile.bio }}</p>
+      {% endif %}
+      {% if profile.show_total_clicks %}
+        <div class="hero__stats" role="status" aria-live="polite">
+          <div class="hero__stat"><i class="fa-solid fa-bolt"></i> 총 {{ total_clicks }} 클릭</div>
+        </div>
       {% endif %}
     </header>
     <div class="hero__links">
@@ -43,7 +52,15 @@
           rel="noopener noreferrer"
         >
           <div class="hero__button-leading">
-            {% if link.icon %}<span class="hero__icon">{{ link.icon }}</span>{% endif %}
+            {% if link.icon %}
+              {% if link.is_icon_image %}
+                <span class="hero__icon hero__icon--image">
+                  <img src="{{ link.icon }}" alt="" loading="lazy" class="hero__icon-img" />
+                </span>
+              {% else %}
+                <span class="hero__icon">{{ link.icon }}</span>
+              {% endif %}
+            {% endif %}
             <span>{{ link.label }}</span>
           </div>
           <span class="hero__clicks"><i class="fa-solid fa-bolt"></i> {{ link.click_count }} 클릭</span>
