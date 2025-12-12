@@ -6,7 +6,7 @@ from .models import Link, Profile
 class LinkInline(admin.TabularInline):
     model = Link
     extra = 1
-    fields = ("label", "url", "icon", "is_primary", "order")
+    fields = ("label", "url", "icon", "icon_image", "is_primary", "order")
 
 
 @admin.register(Profile)
@@ -28,3 +28,4 @@ class LinkAdmin(admin.ModelAdmin):
     list_filter = ("is_primary", "profile")
     search_fields = ("label", "url")
     ordering = ("profile", "order")
+    fields = ("profile", "label", "url", "icon", "icon_image", "click_count", "is_primary", "order")

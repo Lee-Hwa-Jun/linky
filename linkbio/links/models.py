@@ -42,6 +42,7 @@ class Link(models.Model):
     label = models.CharField(max_length=150)
     url = models.URLField()
     icon = models.CharField(max_length=80, blank=True, help_text="Optional emoji or icon text")
+    icon_image = models.FileField(upload_to="link_icons/", blank=True)
     click_count = models.PositiveIntegerField(default=0)
     is_primary = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
@@ -56,8 +57,13 @@ class Link(models.Model):
 
     @property
     def is_icon_image(self) -> bool:
-        if not self.icon:
-            return False
+        if self.icon_image:
+            return True
 
-        parsed = urlparse(self.icon)
-        return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+          @property
+    def icon_image_url(self) -> str | None:
+        if self.icon_image:
+            return self.icon_image.url
+        if self.is_icon_image:
+            return self.icon
+        return None

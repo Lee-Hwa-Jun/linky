@@ -74,6 +74,23 @@ class LandingViewTests(TestCase):
         response = self.client.get(reverse("links:profile", args=[self.profile.slug]))
         self.assertContains(response, "hero__icon-img")
 
+    def test_uploaded_icon_image_has_priority_over_text_icon(self):
+        icon_file = SimpleUploadedFile(
+            "icon.gif",
+            b"GIF87a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff!\xf9\x04\x00\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02L\x01\x00;",
+            content_type="image/gif",
+        )
+        Link.objects.create(
+            profile=self.profile,
+            label="홈페이지",
+            url="https://home.example.com",
+            icon="🙂",
+            icon_image=icon_file,
+        )
+        response = self.client.get(reverse("links:profile", args=[self.profile.slug]))
+        self.assertContains(response, "link_icons/")
+        self.assertContains(response, "hero__icon-img")
+
     def test_missing_profile_returns_404(self):
         Profile.objects.all().delete()
         response = self.client.get(reverse("links:landing"))

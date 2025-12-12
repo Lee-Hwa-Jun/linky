@@ -52,10 +52,10 @@
           rel="noopener noreferrer"
         >
           <div class="hero__button-leading">
-            {% if link.icon %}
-              {% if link.is_icon_image %}
+            {% if link.icon_image or link.icon %}
+              {% if link.icon_image_url %}
                 <span class="hero__icon hero__icon--image">
-                  <img src="{{ link.icon }}" alt="" loading="lazy" class="hero__icon-img" />
+                  <img src="{{ link.icon_image_url }}" alt="" loading="lazy" class="hero__icon-img" />
                 </span>
               {% else %}
                 <span class="hero__icon">{{ link.icon }}</span>
