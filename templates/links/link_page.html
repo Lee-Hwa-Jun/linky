@@ -4,7 +4,13 @@
 {% block content %}
 <div class="marquee" style="--accent: {{ profile.accent_color }};">
   <div class="marquee__inner">
-          <p class="marquee__text">     {{ profile.headline }}</p>
+    {% for _ in "12" %}
+      <div class="marquee__group">
+        {% for text in marquee_texts %}
+          <p class="marquee__text">{{ text }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
   </div>
 </div>
 
@@ -25,10 +31,16 @@
         </div>
       {% endif %}
       <div class="hero__identity">
-        <div class="hero__chip">{{ profile.name }}</div>
+        <div class="hero__chip">{{ profile.name }}'s Space</div>
+        <h1 class="hero__name">{{ profile.name }}</h1>
       </div>
       {% if profile.bio %}
         <p class="hero__bio">{{ profile.bio }}</p>
+      {% endif %}
+      {% if profile.show_total_clicks %}
+        <div class="hero__stats" role="status" aria-live="polite">
+          <div class="hero__stat"><i class="fa-solid fa-bolt"></i> 총 {{ total_clicks }} 클릭</div>
+        </div>
       {% endif %}
     </header>
     <div class="hero__links">
@@ -51,7 +63,7 @@
             {% endif %}
             <span>{{ link.label }}</span>
           </div>
-          {% if profile.show_total_clicks %}<span class="hero__clicks"><i class="fa-solid fa-bolt"></i> {{ link.click_count }} 클릭</span>{% endif %}
+          <span class="hero__clicks"><i class="fa-solid fa-bolt"></i> {{ link.click_count }} 클릭</span>
         </a>
       {% empty %}
         <p class="hero__bio">추가된 링크가 없습니다. 관리자에서 링크를 등록해 주세요.</p>
