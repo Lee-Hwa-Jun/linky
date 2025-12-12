@@ -59,13 +59,8 @@ class Link(models.Model):
     def is_icon_image(self) -> bool:
         if self.icon_image:
             return True
-        if not self.icon:
-            return False
 
-        parsed = urlparse(self.icon)
-        return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
-
-    @property
+          @property
     def icon_image_url(self) -> str | None:
         if self.icon_image:
             return self.icon_image.url
