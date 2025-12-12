@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import F, Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -15,12 +15,16 @@ def landing(request, slug=None):
             raise Http404("No active profile configured")
 
     links = profile.links.all()
+    total_clicks = links.aggregate(total=Sum("click_count")).get("total") or 0
+    marquee_texts = [profile.headline or "오늘도 멋진 하루 보내세요."] * 3
     return render(
         request,
         "links/link_page.html",
         {
             "profile": profile,
             "links": links,
+            "total_clicks": total_clicks,
+            "marquee_texts": marquee_texts,
         },
     )
 
