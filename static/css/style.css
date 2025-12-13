@@ -35,7 +35,7 @@ body {
 .marquee__inner {
   display: flex;
   width: max-content;
-  animation: marquee 18s linear infinite;
+  animation: marquee 60s linear infinite;
 }
 
 .marquee__group {
@@ -183,6 +183,7 @@ body {
 }
 
 .hero__bio {
+  width: 100%;
   font-size: 1rem;
   color: #374151;
   margin: 4px 0 0;
@@ -190,8 +191,18 @@ body {
   white-space: pre-line;
   padding: 14px 16px;
   border-radius: 18px;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 30px rgba(0, 0, 0, 0.05);
+
+  background: linear-gradient(
+    120deg,
+    rgba(243, 244, 246, 0.9),
+    rgba(229, 231, 235, 0.75)
+  );
+
+  border: 1px solid rgba(209, 213, 219, 0.6);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
 .hero__stats {
@@ -255,8 +266,8 @@ body {
 }
 
 .hero__icon--image {
-  width: 38px;
-  height: 38px;
+  width: 60px;
+  height: 60px;
   background: rgba(0, 0, 0, 0.04);
   border-radius: 14px;
   display: inline-flex;
@@ -267,8 +278,8 @@ body {
 }
 
 .hero__icon-img {
-  width: 26px;
-  height: 26px;
+  width: 50px;
+  height: 50px;
   object-fit: cover;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.04);
@@ -289,7 +300,29 @@ body {
   gap: 6px;
   padding: 8px 10px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.04);
+  background: rgba(255, 77, 109, 0.18);
+}
+
+.hero__sale {
+  font-size: 0.9rem;
+  color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 193, 7, 0.22);
+}
+
+.hero__best {
+  font-size: 0.9rem;
+  color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(33, 150, 243, 0.22);
 }
 
 @media (max-width: 480px) {

@@ -15,7 +15,6 @@ def landing(request, slug=None):
             raise Http404("No active profile configured")
 
     links = profile.links.all()
-    total_clicks = links.aggregate(total=Sum("click_count")).get("total") or 0
     marquee_texts = [profile.headline or "오늘도 멋진 하루 보내세요."] * 3
     return render(
         request,
@@ -23,7 +22,6 @@ def landing(request, slug=None):
         {
             "profile": profile,
             "links": links,
-            "total_clicks": total_clicks,
             "marquee_texts": marquee_texts,
         },
     )

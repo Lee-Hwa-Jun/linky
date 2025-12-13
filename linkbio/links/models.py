@@ -60,7 +60,7 @@ class Link(models.Model):
         if self.icon_image:
             return True
 
-          @property
+    @property
     def icon_image_url(self) -> str | None:
         if self.icon_image:
             return self.icon_image.url
