@@ -52,13 +52,17 @@
             {% endif %}
             <span>{{ link.label }}</span>
           </div>
-        <div class="fa-solid fa-bolt">
-            <span class="hero__sale"> 💸할인 </span>
-            <span class="hero__best"> 👍인기 </span>
-            {% if profile.show_total_clicks %}
-            <span class="hero__clicks"> ♥️ {{ link.click_count }} </span>
+          <div class="hero__button-meta">
+            {% if link.show_discount_badge %}
+              <span class="hero__sale"> 💸할인 </span>
             {% endif %}
-        </div>
+            {% if link.show_popular_badge %}
+              <span class="hero__best"> 👍인기 </span>
+            {% endif %}
+            {% if profile.show_total_clicks %}
+              <span class="hero__clicks">총 {{ link.click_count }} 클릭</span>
+            {% endif %}
+          </div>
         </a>
       {% empty %}
         <p class="hero__bio">추가된 링크가 없습니다. 관리자에서 링크를 등록해 주세요.</p>

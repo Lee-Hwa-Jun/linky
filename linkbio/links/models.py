@@ -43,6 +43,14 @@ class Link(models.Model):
     url = models.URLField()
     icon = models.CharField(max_length=80, blank=True, help_text="Optional emoji or icon text")
     icon_image = models.FileField(upload_to="link_icons/", blank=True)
+    show_discount_badge = models.BooleanField(
+        default=False,
+        help_text="Show a 할인 badge on the link",
+    )
+    show_popular_badge = models.BooleanField(
+        default=False,
+        help_text="Show an 인기 badge on the link",
+    )
     click_count = models.PositiveIntegerField(default=0)
     is_primary = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
@@ -59,11 +67,15 @@ class Link(models.Model):
     def is_icon_image(self) -> bool:
         if self.icon_image:
             return True
+        if self.icon:
+            parsed = urlparse(self.icon)
+            return parsed.scheme in {"http", "https"}
+        return False
 
     @property
     def icon_image_url(self) -> str | None:
         if self.icon_image:
             return self.icon_image.url
-        if self.is_icon_image:
+        if self.is_icon_image and self.icon:
             return self.icon
         return None

@@ -3,6 +3,8 @@ set -e
 
 # Ensure log directory exists for Django file logging
 mkdir -p /var/log/linky
+# Ensure media directory exists for uploaded files
+mkdir -p /app/media
 
 # Apply database migrations
 python manage.py migrate

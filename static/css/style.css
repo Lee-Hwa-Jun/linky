@@ -249,6 +249,12 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
+.hero__button-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .hero__button:hover,
 .hero__button:focus-visible {
   transform: translateY(-2px);
