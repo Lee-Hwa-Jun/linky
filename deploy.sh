@@ -4,6 +4,23 @@ set -euo pipefail
 COMPOSE_CMD=${COMPOSE_CMD:-"docker compose"}
 SERVICES=(web_blue web_green)
 
+# --- Git update (before build) ---
+REPO_DIR="${REPO_DIR:-/home/apps/linky}"
+BRANCH="${BRANCH:-main}"
+
+cd "$REPO_DIR"
+
+# 안전장치: 로컬 변경사항 있으면 중단(원하면 stash로 바꿀 수 있음)
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "[ERROR] Working tree has local changes. Commit/stash before deploy."
+  exit 1
+fi
+
+echo "[INFO] git fetch & pull origin/${BRANCH}"
+git fetch origin "$BRANCH"
+git checkout "$BRANCH"
+git pull --ff-only origin "$BRANCH"
+
 info() { printf "[deploy] %s\n" "$*"; }
 
 wait_for_service() {
