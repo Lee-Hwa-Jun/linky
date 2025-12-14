@@ -16,6 +16,10 @@ class Profile(models.Model):
     bio = models.TextField(blank=True)
     avatar = models.FileField(upload_to="avatars/", blank=True)
     background_url = models.URLField(blank=True)
+    instagram_url = models.URLField(blank=True)
+    facebook_url = models.URLField(blank=True)
+    youtube_url = models.URLField(blank=True)
+    thread_url = models.URLField(blank=True)
     accent_color = models.CharField(max_length=16, default="#f3b1c6")
     button_radius = models.PositiveIntegerField(default=12, help_text="Radius in pixels for link buttons")
     show_total_clicks = models.BooleanField(default=True, help_text="Show the total click count across all links")
@@ -43,6 +47,7 @@ class Link(models.Model):
     url = models.URLField()
     icon = models.CharField(max_length=80, blank=True, help_text="Optional emoji or icon text")
     icon_image = models.FileField(upload_to="link_icons/", blank=True)
+    hashtags = models.CharField(max_length=255, blank=True, help_text="Comma-separated hashtags (without #)")
     show_discount_badge = models.BooleanField(
         default=False,
         help_text="Show a 할인 badge on the link",
@@ -79,3 +84,7 @@ class Link(models.Model):
         if self.is_icon_image and self.icon:
             return self.icon
         return None
+
+    @property
+    def hashtags_list(self) -> list[str]:  # pragma: no cover - deterministic parsing
+        return [tag.strip() for tag in self.hashtags.split(",") if tag.strip()]

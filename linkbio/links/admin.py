@@ -11,6 +11,7 @@ class LinkInline(admin.TabularInline):
         "url",
         "icon",
         "icon_image",
+        "hashtags",
         "show_discount_badge",
         "show_popular_badge",
         "is_primary",
@@ -26,6 +27,17 @@ class ProfileAdmin(admin.ModelAdmin):
     search_fields = ("name", "headline")
     fieldsets = (
         (None, {"fields": ("name", "slug", "headline", "bio", "avatar", "background_url")}),
+        (
+            "소셜 링크",
+            {
+                "fields": (
+                    "instagram_url",
+                    "facebook_url",
+                    "youtube_url",
+                    "thread_url",
+                )
+            },
+        ),
         ("Display", {"fields": ("accent_color", "button_radius", "show_total_clicks", "is_active")}),
     )
     inlines = [LinkInline]
@@ -35,7 +47,7 @@ class ProfileAdmin(admin.ModelAdmin):
 class LinkAdmin(admin.ModelAdmin):
     list_display = ("label", "profile", "is_primary", "order")
     list_filter = ("is_primary", "profile")
-    search_fields = ("label", "url")
+    search_fields = ("label", "url", "hashtags")
     ordering = ("profile", "order")
     fields = (
         "profile",
@@ -43,6 +55,7 @@ class LinkAdmin(admin.ModelAdmin):
         "url",
         "icon",
         "icon_image",
+        "hashtags",
         "show_discount_badge",
         "show_popular_badge",
         "click_count",

@@ -31,6 +31,72 @@
       {% if profile.bio %}
         <p class="hero__bio">{{ profile.bio }}</p>
       {% endif %}
+      <div class="hero__socials">
+        {% if profile.instagram_url %}
+          <a href="{{ profile.instagram_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fa-brands fa-instagram"></i>
+          </a>
+        {% endif %}
+        {% if profile.facebook_url %}
+          <a href="{{ profile.facebook_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fa-brands fa-facebook"></i>
+          </a>
+        {% endif %}
+        {% if profile.youtube_url %}
+          <a href="{{ profile.youtube_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+            <i class="fa-brands fa-youtube"></i>
+          </a>
+        {% endif %}
+        {% if profile.thread_url %}
+          <a href="{{ profile.thread_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="Threads">
+            <i class="fa-brands fa-threads"></i>
+          </a>
+        {% endif %}
+      </div>
+      <div class="hero__search" aria-label="링크 검색">
+        <form method="get">
+          {% if active_hashtag %}
+            <input type="hidden" name="hashtag" value="{{ active_hashtag }}" />
+          {% endif %}
+          <div class="hero__search-field">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+              type="search"
+              name="q"
+              value="{{ search_query }}"
+              placeholder="링크 라벨 검색"
+              aria-label="링크 라벨 검색"
+            />
+            {% if search_query %}
+              <a
+                class="hero__search-clear"
+                href="?{% if active_hashtag %}hashtag={{ active_hashtag|urlencode }}{% endif %}"
+                aria-label="검색 초기화"
+              >
+                ✕
+              </a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+      {% if available_hashtags %}
+        <div class="hero__hashtags" aria-label="해시태그 필터">
+          <a
+            class="hero__tag {% if not active_hashtag %}hero__tag--active{% endif %}"
+            href="?{% if search_query %}q={{ search_query|urlencode }}{% endif %}"
+          >
+            전체
+          </a>
+          {% for tag in available_hashtags %}
+            <a
+              class="hero__tag {% if tag == active_hashtag %}hero__tag--active{% endif %}"
+              href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}hashtag={{ tag|urlencode }}"
+            >
+              #{{ tag }}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
     </header>
     <div class="hero__links">
       {% for link in links %}
@@ -60,9 +126,21 @@
               <span class="hero__best"> 👍인기 </span>
             {% endif %}
             {% if profile.show_total_clicks %}
-              <span class="hero__clicks"> ♥️ {{ link.click_count }} </span>
+              <span class="hero__clicks"> ♥️ 총 {{ link.click_count }} 클릭 </span>
             {% endif %}
           </div>
+          {% if link.hashtags_list %}
+            <div class="hero__hashtags hero__hashtags--inline">
+              {% for tag in link.hashtags_list %}
+                <a
+                  class="hero__tag {% if tag == active_hashtag %}hero__tag--active{% endif %}"
+                  href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}hashtag={{ tag|urlencode }}"
+                >
+                  #{{ tag }}
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
         </a>
       {% empty %}
         <p class="hero__bio">추가된 링크가 없습니다. 관리자에서 링크를 등록해 주세요.</p>
