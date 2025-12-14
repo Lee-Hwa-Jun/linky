@@ -77,7 +77,7 @@ if ${COMPOSE_CMD} ps --status running nginx >/dev/null 2>&1; then
   ${COMPOSE_CMD} exec -T nginx nginx -s reload || true
 else
   info "Starting nginx"
-  ${COMPOSE_CMD} up -d nginx
+  ${COMPOSE_CMD} restart nginx
 fi
 
 info "Deployment complete. Both web instances should now be serving traffic."
