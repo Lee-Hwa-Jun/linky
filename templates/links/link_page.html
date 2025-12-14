@@ -34,22 +34,26 @@
       <div class="hero__socials">
         {% if profile.instagram_url %}
           <a href="{{ profile.instagram_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <i class="fa-brands fa-instagram"></i>
+              <img src="{% static 'icons/instagram.svg' %}" alt="Instagram">
+              <i class="fa-brands fa-instagram"></i>
           </a>
         {% endif %}
         {% if profile.facebook_url %}
           <a href="{{ profile.facebook_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-            <i class="fa-brands fa-facebook"></i>
+              <img src="{% static 'icons/facebook.svg' %}" alt="Instagram">
+              <i class="fa-brands fa-facebook"></i>
           </a>
         {% endif %}
         {% if profile.youtube_url %}
           <a href="{{ profile.youtube_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-            <i class="fa-brands fa-youtube"></i>
+              <img src="{% static 'icons/youtube.svg' %}" alt="Instagram">
+              <i class="fa-brands fa-youtube"></i>
           </a>
         {% endif %}
         {% if profile.thread_url %}
           <a href="{{ profile.thread_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="Threads">
-            <i class="fa-brands fa-threads"></i>
+              <img src="{% static 'icons/threads.svg' %}" alt="Instagram">
+              <i class="fa-brands fa-threads"></i>
           </a>
         {% endif %}
       </div>
@@ -64,8 +68,8 @@
               type="search"
               name="q"
               value="{{ search_query }}"
-              placeholder="링크 라벨 검색"
-              aria-label="링크 라벨 검색"
+              placeholder="검색"
+              aria-label="검색"
             />
             {% if search_query %}
               <a
