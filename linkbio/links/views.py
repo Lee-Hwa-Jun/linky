@@ -1,4 +1,4 @@
-from django.db.models import F, Sum
+from django.db.models import F
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -14,8 +14,26 @@ def landing(request, slug=None):
         if not profile:
             raise Http404("No active profile configured")
 
-    links = profile.links.all()
+    links_qs = profile.links.all()
     marquee_texts = [profile.headline or "오늘도 멋진 하루 보내세요."] * 3
+
+    search_query = (request.GET.get("q") or "").strip()
+    active_hashtag = (request.GET.get("hashtag") or "").lstrip("#").strip()
+
+    available_hashtags = sorted(
+        {
+            hashtag
+            for link in links_qs
+            for hashtag in link.hashtags_list
+        }
+    )
+
+    if search_query:
+        links_qs = links_qs.filter(label__icontains=search_query)
+    if active_hashtag:
+        links_qs = links_qs.filter(hashtags__icontains=active_hashtag)
+
+    links = list(links_qs)
     return render(
         request,
         "links/link_page.html",
@@ -23,6 +41,9 @@ def landing(request, slug=None):
             "profile": profile,
             "links": links,
             "marquee_texts": marquee_texts,
+            "available_hashtags": available_hashtags,
+            "active_hashtag": active_hashtag,
+            "search_query": search_query,
         },
     )
 
