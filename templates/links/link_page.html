@@ -28,10 +28,7 @@
       <div class="hero__identity">
         <div class="hero__chip">{{ profile.name }}</div>
       </div>
-      {% if profile.bio %}
-        <p class="hero__bio">{{ profile.bio }}</p>
-      {% endif %}
-      <div class="hero__socials">
+    <div class="hero__socials">
         {% if profile.instagram_url %}
           <a href="{{ profile.instagram_url }}" class="hero__social" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <img src="{% static 'icons/instagram.svg' %}" alt="Instagram">
@@ -57,6 +54,9 @@
           </a>
         {% endif %}
       </div>
+      {% if profile.bio %}
+        <p class="hero__bio">{{ profile.bio }}</p>
+      {% endif %}
       <div class="hero__search" aria-label="링크 검색">
         <form method="get">
           {% if active_hashtag %}
@@ -133,18 +133,7 @@
               <span class="hero__clicks"> ♥️ 총 {{ link.click_count }} 클릭 </span>
             {% endif %}
           </div>
-          {% if link.hashtags_list %}
-            <div class="hero__hashtags hero__hashtags--inline">
-              {% for tag in link.hashtags_list %}
-                <a
-                  class="hero__tag {% if tag == active_hashtag %}hero__tag--active{% endif %}"
-                  href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}hashtag={{ tag|urlencode }}"
-                >
-                  #{{ tag }}
-                </a>
-              {% endfor %}
-            </div>
-          {% endif %}
+
         </a>
       {% empty %}
         <p class="hero__bio">추가된 링크가 없습니다. 관리자에서 링크를 등록해 주세요.</p>
