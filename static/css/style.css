@@ -21,6 +21,12 @@ body {
   color: var(--text-primary);
 }
 
+span {
+  word-break: keep-all;
+  font-size: 0.75rem;
+  display: inline-flex;
+}
+
 .marquee {
   position: sticky;
   top: 0;
