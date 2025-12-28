@@ -8,10 +8,10 @@ class InquiryForm(forms.ModelForm):
         model = Inquiry
         fields = ("extension", "category", "title", "content")
         widgets = {
-            "extension": forms.Select(attrs={"class": "w-full rounded-lg border-gray-200"}),
-            "category": forms.Select(attrs={"class": "w-full rounded-lg border-gray-200"}),
-            "title": forms.TextInput(attrs={"class": "w-full rounded-lg border-gray-200"}),
+            "extension": forms.Select(attrs={"class": "text-black w-full rounded-lg border-gray-200"}),
+            "category": forms.Select(attrs={"class": "text-black w-full rounded-lg border-gray-200"}),
+            "title": forms.TextInput(attrs={"class": "text-black w-full rounded-lg border-gray-200"}),
             "content": forms.Textarea(
-                attrs={"class": "w-full rounded-lg border-gray-200", "rows": 5}
+                attrs={"class": "text-black w-full rounded-lg border-gray-200", "rows": 5}
             ),
         }

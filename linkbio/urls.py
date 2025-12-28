@@ -8,8 +8,9 @@ admin_url = os.getenv('ADMIN_URL', 'admin/')
 
 urlpatterns = [
     path(admin_url, admin.site.urls),
-    path('', include('linkbio.links.urls')),
     path('extentions/', include('extentions.urls')),
+    path('', include('linkbio.links.urls')),
+
 ]
 
 if settings.DEBUG:
