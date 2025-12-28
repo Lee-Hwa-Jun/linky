@@ -4,6 +4,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Link, Profile
 
+import random
+
 
 def landing(request, slug=None):
     queryset = Profile.objects.active().prefetch_related("links")
@@ -57,5 +59,5 @@ def track_link(request, slug: str, link_id: int):
 
 def profile_links(request, slug: str):
     profile = get_object_or_404(Profile.objects.active(), slug=slug)
-    links = list(profile.links.values_list("url", flat=True))
+    links = random.choice(list(profile.links.values_list("url", flat=True)))
     return JsonResponse({"links": links})
