@@ -1,5 +1,5 @@
 from django.db.models import F
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Link, Profile
@@ -53,3 +53,9 @@ def track_link(request, slug: str, link_id: int):
     link = get_object_or_404(Link, id=link_id, profile=profile)
     Link.objects.filter(id=link.id).update(click_count=F("click_count") + 1)
     return redirect(link.url)
+
+
+def profile_links(request, slug: str):
+    profile = get_object_or_404(Profile.objects.active(), slug=slug)
+    links = list(profile.links.values_list("url", flat=True))
+    return JsonResponse({"links": links})
