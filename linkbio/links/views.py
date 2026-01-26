@@ -69,13 +69,13 @@ def profile_links(request, slug: str):
 
 def lucky(request):
     ad_profile = Profile.objects.active().prefetch_related("links").filter(slug="moonis").first()
-    ad_link = ad_profile.links.first() if ad_profile else None
+    ad_links = list(ad_profile.links.all()) if ad_profile else []
     return render(
         request,
         "links/lucky.html",
         {
             "ad_profile": ad_profile,
-            "ad_link": ad_link,
+            "ad_links": ad_links,
         },
     )
 

@@ -25,7 +25,7 @@
           <img
             id="fortuneImage"
             class="fortune-image"
-            src="{% static 'image_src/fortune1.png' %}"
+            src="{% static 'image_src/fortune_box.png' %}"
             alt="포춘쿠키 이미지"
             data-stage-0="{% static 'image_src/fortune1.png' %}"
             data-stage-1="{% static 'image_src/fortune2.png' %}"
@@ -51,42 +51,46 @@
     <p class="fortune-counter" id="fortuneCounter">깨짐 단계: 0 / 3</p>
   </main>
 
-  {% if ad_link %}
+  {% if ad_links %}
     <section class="lucky-ad">
       <p class="lucky-ad__label">추천 링크</p>
-      <a
-        class="hero__button lucky-ad__card"
-        href="{{ ad_link.url }}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div class="hero__button-leading lucky-ad__meta">
-          {% if ad_link.icon_image or ad_link.icon %}
-            {% if ad_link.icon_image_url %}
-              <span class="hero__icon hero__icon--image">
-                <img src="{{ ad_link.icon_image_url }}" alt="" loading="lazy" class="hero__icon-img" />
-              </span>
-            {% else %}
-              <span class="hero__icon">{{ ad_link.icon }}</span>
-            {% endif %}
-          {% endif %}
-          <div class="lucky-ad__text">
-            <p class="lucky-ad__title">{{ ad_profile.name }}</p>
-            <p class="lucky-ad__subtitle">{{ ad_link.label }}</p>
-          </div>
-        </div>
-        <div class="hero__button-meta">
-          {% if ad_link.show_discount_badge %}
-            <span class="hero__sale"> 💸할인 </span>
-          {% endif %}
-          {% if ad_link.show_popular_badge %}
-            <span class="hero__best"> 👍인기 </span>
-          {% endif %}
-          {% if ad_profile.show_total_clicks %}
-            <span class="hero__clicks">♥️{{ ad_link.click_count }}</span>
-          {% endif %}
-        </div>
-      </a>
+      <div class="lucky-ad__list">
+        {% for ad_link in ad_links %}
+          <a
+            class="hero__button lucky-ad__card"
+            href="{{ ad_link.url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div class="hero__button-leading lucky-ad__meta">
+              {% if ad_link.icon_image or ad_link.icon %}
+                {% if ad_link.icon_image_url %}
+                  <span class="hero__icon hero__icon--image">
+                    <img src="{{ ad_link.icon_image_url }}" alt="" loading="lazy" class="hero__icon-img" />
+                  </span>
+                {% else %}
+                  <span class="hero__icon">{{ ad_link.icon }}</span>
+                {% endif %}
+              {% endif %}
+              <div class="lucky-ad__text">
+                <p class="lucky-ad__title">{{ ad_profile.name }}</p>
+                <p class="lucky-ad__subtitle">{{ ad_link.label }}</p>
+              </div>
+            </div>
+            <div class="hero__button-meta">
+              {% if ad_link.show_discount_badge %}
+                <span class="hero__sale"> 💸할인 </span>
+              {% endif %}
+              {% if ad_link.show_popular_badge %}
+                <span class="hero__best"> 👍인기 </span>
+              {% endif %}
+              {% if ad_profile.show_total_clicks %}
+                <span class="hero__clicks">♥️{{ ad_link.click_count }}</span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
     </section>
   {% endif %}
 </div>
