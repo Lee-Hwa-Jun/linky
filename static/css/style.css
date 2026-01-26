@@ -259,11 +259,12 @@ span {
 
 .fortune-cookie {
   position: relative;
-  width: 190px;
-  height: 120px;
-  border-radius: 60% 60% 50% 50%;
-  background: linear-gradient(135deg, #f7c873 0%, #f5a94d 50%, #e17b2d 100%);
-  box-shadow: inset 0 6px 12px rgba(255, 255, 255, 0.5), 0 22px 40px rgba(105, 56, 0, 0.25);
+
+  width: 240px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
@@ -275,54 +276,23 @@ span {
 
 .fortune-cookie:hover {
   transform: translateY(-3px);
-  box-shadow: inset 0 6px 14px rgba(255, 255, 255, 0.6), 0 26px 45px rgba(105, 56, 0, 0.3);
+  filter: drop-shadow(0 18px 32px rgba(105, 56, 0, 0.25));
 }
 
-.fortune-cookie__shine {
-  position: absolute;
-  top: 16px;
-  left: 20px;
-  width: 120px;
-  height: 50px;
-  border-radius: 999px;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.8), transparent);
-  opacity: 0.7;
-}
-
-.fortune-cookie__shadow {
-  position: absolute;
-  bottom: 12px;
-  left: 32px;
-  width: 120px;
-  height: 20px;
-  background: rgba(150, 78, 14, 0.35);
-  filter: blur(12px);
-  border-radius: 999px;
+.fortune-cookie__svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 18px 30px rgba(105, 56, 0, 0.22));
 }
 
 .fortune-crack {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  fill: none;
+  stroke: rgba(106, 45, 0, 0.8);
+  stroke-width: 6px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   opacity: 0;
   transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.fortune-crack::before {
-  content: '';
-  position: absolute;
-  inset: 18px 36px;
-  background: repeating-linear-gradient(
-    120deg,
-    rgba(120, 54, 10, 0.55) 0px,
-    rgba(120, 54, 10, 0.55) 2px,
-    transparent 2px,
-    transparent 10px
-  );
-  transform: rotate(-8deg);
-  border-radius: 16px;
-  opacity: 0.9;
 }
 
 .fortune-cookie--crack-1 .crack-1,
@@ -340,15 +310,6 @@ span {
   opacity: 1;
 }
 
-.crack-2::before {
-  inset: 12px 30px;
-  transform: rotate(6deg);
-}
-
-.crack-3::before {
-  inset: 10px 24px;
-  transform: rotate(-2deg);
-}
 
 .fortune-paper {
   position: absolute;
@@ -429,8 +390,8 @@ span {
   }
 
   .fortune-cookie {
-    width: 220px;
-    height: 140px;
+    width: 260px;
+    height: 190px;
   }
 }
 

@@ -20,11 +20,49 @@
         tabindex="0"
         aria-label="포춘쿠키를 클릭해 깨뜨리기"
       >
-        <span class="fortune-cookie__shine"></span>
-        <span class="fortune-cookie__shadow"></span>
-        <span class="fortune-crack crack-1"></span>
-        <span class="fortune-crack crack-2"></span>
-        <span class="fortune-crack crack-3"></span>
+        <svg
+          class="fortune-cookie__svg"
+          viewBox="0 0 280 180"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="cookieBase" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#f9d58b" />
+              <stop offset="45%" stop-color="#f5b563" />
+              <stop offset="100%" stop-color="#e57f2c" />
+            </linearGradient>
+            <linearGradient id="cookieDeep" x1="0" x2="1" y1="1" y2="0">
+              <stop offset="0%" stop-color="#f5b563" />
+              <stop offset="100%" stop-color="#d66b1f" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="140" cy="140" rx="110" ry="25" fill="rgba(126, 63, 12, 0.25)" />
+          <path
+            d="M40 90c30-55 170-55 200 0-20 50-60 70-100 70S60 140 40 90z"
+            fill="url(#cookieBase)"
+          />
+          <path
+            d="M70 80c40-40 120-40 160 0-15 35-40 55-80 55S85 115 70 80z"
+            fill="url(#cookieDeep)"
+            opacity="0.85"
+          />
+          <path
+            d="M85 70c20-18 90-20 110 0"
+            stroke="rgba(255,255,255,0.7)"
+            stroke-width="12"
+            stroke-linecap="round"
+          />
+          <g class="fortune-crack crack-1">
+            <path d="M120 65l-18 22 24 18-12 20" />
+          </g>
+          <g class="fortune-crack crack-2">
+            <path d="M150 60l18 24-22 16 14 22" />
+          </g>
+          <g class="fortune-crack crack-3">
+            <path d="M135 58l-10 26 28 20-18 24" />
+          </g>
+        </svg>
       </div>
 
       <div class="fortune-paper" id="fortunePaper" aria-live="polite">
