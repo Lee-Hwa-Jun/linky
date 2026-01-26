@@ -170,6 +170,8 @@ const drawButton = document.getElementById("drawButton");
 
   const drawFortune = async () => {
     try {
+      currentFortune = null;
+      crackLevel = 0;
       const data = await fetchFortune("draw");
       applyFortuneResponse(data);
     } catch (error) {
@@ -179,10 +181,10 @@ const drawButton = document.getElementById("drawButton");
 
   const resetFortune = async () => {
     try {
-      const data = await fetchFortune("reset");
       fortuneImage.src = resetImage;
       currentFortune = null;
       crackLevel = 0;
+      const data = await fetchFortune("reset");
       applyFortuneResponse(data);
     } catch (error) {
       console.error(error);
