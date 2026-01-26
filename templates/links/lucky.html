@@ -45,10 +45,7 @@
     <p class="fortune-hint" id="fortuneHint">아직 쿠키를 뽑지 않았어요.</p>
     <div class="fortune-actions">
       <button class="fortune-button" id="drawButton" type="button">포춘쿠키 뽑기</button>
-      <button class="fortune-button fortune-button--ghost" id="resetButton" type="button" hidden>
-        오늘 기록 초기화
-      </button>
-    </div>
+      </div>
     <p class="fortune-counter" id="fortuneCounter">깨짐 단계: 0 / 3</p>
   </main>
 
@@ -96,7 +93,7 @@
 </div>
 
 <script>
-const drawButton = document.getElementById("drawButton");
+  const drawButton = document.getElementById("drawButton");
   const cookie = document.getElementById("fortuneCookie");
   const fortuneImage = document.getElementById("fortuneImage");
   const paper = document.getElementById("fortunePaper");
@@ -104,57 +101,71 @@ const drawButton = document.getElementById("drawButton");
   const fortuneHint = document.getElementById("fortuneHint");
   const fortuneCounter = document.getElementById("fortuneCounter");
   const fortuneEndpoint = cookie.dataset.endpoint;
-  const resetButton = document.getElementById("resetButton");
+  const adLinks = document.querySelectorAll('.lucky-ad__card'); // 광고 링크들 선택
 
   let currentFortune = null;
-  let crackLevel = -1;
+  let crackLevel = 0; // 0, 1, 2, 3 단계
   let statusMessage = null;
 
-  // [중요 수정] dataset 대신 getAttribute를 사용하여 값을 확실하게 가져옵니다.
+  // 이미지 경로 설정
   const fallbackImage = fortuneImage.getAttribute("src");
+  const resetImage = fortuneImage.getAttribute("data-stage-reset") || fallbackImage; // 상자 이미지
+
   const imageStages = [
-    fortuneImage.getAttribute("data-stage-0") || fallbackImage, // 0단계
-    fortuneImage.getAttribute("data-stage-1") || fallbackImage, // 1단계
-    fortuneImage.getAttribute("data-stage-2") || fallbackImage, // 2단계
-    fortuneImage.getAttribute("data-stage-3") || fallbackImage, // 3단계
-    fortuneImage.getAttribute("data-stage-reset") || fallbackImage, // -1단계
+    fortuneImage.getAttribute("data-stage-0") || fallbackImage, // 0단계 (쿠키 원형)
+    fortuneImage.getAttribute("data-stage-1") || fallbackImage, // 1단계 (금)
+    fortuneImage.getAttribute("data-stage-2") || fallbackImage, // 2단계 (많이 금)
+    fortuneImage.getAttribute("data-stage-3") || fallbackImage, // 3단계 (깨짐)
   ];
 
   const render = () => {
-    // 현재 단계에 맞는 이미지 경로 가져오기
-    const nextImage = imageStages[crackLevel] || imageStages[3];
+    // [B 로직] 이미지가 뽑기 전(null)이면 상자, 아니면 단계별 이미지
+    if (!currentFortune) {
+      fortuneImage.src = resetImage; // 상자 이미지
+    } else {
+      fortuneImage.src = imageStages[crackLevel] || imageStages[3]; // 쿠키 이미지 (0~3)
+    }
 
-    // 이미지 변경 적용
-    fortuneImage.src = nextImage;
-
-    // 텍스트 및 상태 처리
+    // [텍스트 및 상태 처리]
     if (currentFortune && crackLevel >= 3) {
+      // 완료 상태 (A 로직 멘트 적용)
       paper.classList.add("fortune-paper--visible");
       fortuneText.textContent = currentFortune;
-      fortuneHint.textContent = statusMessage || "쿠키가 열렸어요! (내일 또 오세요)";
+      fortuneHint.innerHTML = "이미 오늘의 포춘쿠키를 뽑았어요.<br>아래 링크를 클릭하여 초기화 하거나, 내일 다시 와주세요!";
     } else if (currentFortune) {
+      // 진행 중
       paper.classList.remove("fortune-paper--visible");
       fortuneHint.textContent = "쿠키를 톡톡 눌러 깨뜨려주세요!";
     } else {
+      // 초기 상태
       paper.classList.remove("fortune-paper--visible");
       fortuneText.textContent = "버튼을 눌러 포춘쿠키를 뽑아주세요.";
       fortuneHint.textContent = statusMessage || "아직 쿠키를 뽑지 않았어요.";
     }
 
+    // 버튼 숨김 처리
     if (drawButton) drawButton.hidden = currentFortune !== null;
-    if (resetButton) resetButton.hidden = !(crackLevel >= 3);
 
-    fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
+    // 카운터 표시 (뽑은 상태일 때만)
+    if (currentFortune) {
+        fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
+        fortuneCounter.style.visibility = 'visible';
+    } else {
+        fortuneCounter.style.visibility = 'hidden';
+    }
   };
 
   const applyFortuneResponse = (data) => {
     statusMessage = data.message || null;
 
     if (data.status === "available") {
+      // 뽑기 가능 상태 (초기화 됨)
       currentFortune = null;
       crackLevel = 0;
     } else if (data.fortune) {
+      // 이미 뽑은 상태 or 방금 뽑음
       currentFortune = data.fortune;
+      // 이미 DB에 기록이 있으면 3(완료), 방금 뽑는거면 0(시작)
       crackLevel = data.status === "already_drawn" ? 3 : 0;
     }
     render();
@@ -167,10 +178,9 @@ const drawButton = document.getElementById("drawButton");
     return response.json();
   };
 
+  // [뽑기 버튼 클릭]
   const drawFortune = async () => {
     try {
-      currentFortune = null;
-      crackLevel = 0;
       const data = await fetchFortune("draw");
       applyFortuneResponse(data);
     } catch (error) {
@@ -178,37 +188,33 @@ const drawButton = document.getElementById("drawButton");
     }
   };
 
-  const resetFortune = async () => {
-    try {
-      currentFortune = null;
-      crackLevel = -1;
-      const data = await fetchFortune("reset");
-      applyFortuneResponse(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
+  // [쿠키 클릭]
   const crackCookie = () => {
-    // 아직 뽑지 않았으면 실행 안 함
     if (!currentFortune) {
       fortuneHint.textContent = "먼저 [포춘쿠키 뽑기] 버튼을 눌러주세요!";
       return;
     }
-
-    // 이미 다 깨졌으면 실행 안 함
     if (crackLevel >= 3) return;
 
-    // 단계 증가
     crackLevel++;
     render();
   };
 
-  drawButton.addEventListener("click", drawFortune);
-  if (resetButton) resetButton.addEventListener("click", resetFortune);
+  // [A 로직] 링크 클릭 시 자동 초기화 함수
+  const handleLinkClickReset = () => {
+    // 1. 서버에 초기화 요청 (비동기)
+    fetchFortune("reset").catch(e => console.error("초기화 실패", e));
 
+    // 2. 현재 화면 즉시 초기화 (사용자가 돌아왔을 때를 대비)
+    currentFortune = null;
+    crackLevel = 0;
+    statusMessage = "초기화 되었습니다. 다시 뽑아보세요!";
+    render();
+  };
+
+  // 이벤트 리스너 연결
+  drawButton.addEventListener("click", drawFortune);
   cookie.addEventListener("click", crackCookie);
-  // 키보드 접근성 (엔터/스페이스바)
   cookie.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -216,6 +222,12 @@ const drawButton = document.getElementById("drawButton");
     }
   });
 
+  // 모든 광고 링크에 클릭 이벤트 추가
+  adLinks.forEach(link => {
+    link.addEventListener("click", handleLinkClickReset);
+  });
+
+  // 초기 로딩
   fetchFortune()
     .then((data) => applyFortuneResponse(data))
     .catch(() => render());
