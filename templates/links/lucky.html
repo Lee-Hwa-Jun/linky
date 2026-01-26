@@ -16,6 +16,7 @@
       <div
         class="fortune-cookie"
         id="fortuneCookie"
+        data-endpoint="{% url 'links:fortune_status' %}"
         role="button"
         tabindex="0"
         aria-label="포춘쿠키를 클릭해 깨뜨리기"
@@ -44,15 +45,22 @@
     <button class="fortune-button" id="drawButton" type="button">포춘쿠키 뽑기</button>
     <p class="fortune-counter" id="fortuneCounter">깨짐 단계: 0 / 3</p>
   </main>
+
+  {% if ad_link %}
+    <section class="lucky-ad">
+      <p class="lucky-ad__label">추천 링크</p>
+      <a class="lucky-ad__card" href="{{ ad_link.url }}" target="_blank" rel="noopener noreferrer">
+        <div class="lucky-ad__meta">
+          <p class="lucky-ad__title">{{ ad_profile.name }}</p>
+          <p class="lucky-ad__subtitle">{{ ad_link.label }}</p>
+        </div>
+        <span class="lucky-ad__cta">바로가기</span>
+      </a>
+    </section>
+  {% endif %}
 </div>
 
 <script>
-  const fortunes = [
-    "오늘의 선택이 내일의 즐거움을 만듭니다.",
-    "좋은 대답은 천천히, 좋은 행운은 갑자기 찾아와요.",
-    "마음이 가는 길에 작은 선물을 발견하게 될 거예요.",
-  ];
-
   const drawButton = document.getElementById("drawButton");
   const cookie = document.getElementById("fortuneCookie");
   const fortuneImage = document.getElementById("fortuneImage");
@@ -60,9 +68,11 @@
   const fortuneText = document.getElementById("fortuneText");
   const fortuneHint = document.getElementById("fortuneHint");
   const fortuneCounter = document.getElementById("fortuneCounter");
+  const fortuneEndpoint = cookie.dataset.endpoint;
 
   let currentFortune = null;
   let crackLevel = 0;
+  let statusMessage = null;
 
   const imageStages = [
     fortuneImage.dataset.stage0,
@@ -77,24 +87,53 @@
     if (currentFortune && crackLevel >= 3) {
       paper.classList.add("fortune-paper--visible");
       fortuneText.textContent = currentFortune;
-      fortuneHint.textContent = "쿠키가 열렸어요! 새로운 쿠키를 뽑아볼까요?";
+      fortuneHint.textContent = statusMessage || "쿠키가 열렸어요! 새로운 쿠키를 뽑아볼까요?";
     } else if (currentFortune) {
       paper.classList.remove("fortune-paper--visible");
-      fortuneHint.textContent = "쿠키를 3번 눌러 깨뜨려주세요.";
+      fortuneHint.textContent = statusMessage || "쿠키를 3번 눌러 깨뜨려주세요.";
     } else {
       paper.classList.remove("fortune-paper--visible");
       fortuneText.textContent = "버튼을 눌러 포춘쿠키를 뽑아주세요.";
-      fortuneHint.textContent = "아직 쿠키를 뽑지 않았어요.";
+      fortuneHint.textContent = statusMessage || "아직 쿠키를 뽑지 않았어요.";
     }
 
     fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
   };
 
-  const drawFortune = () => {
-    const nextFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
-    currentFortune = nextFortune;
-    crackLevel = 0;
+  const applyFortuneResponse = (data) => {
+    statusMessage = data.message || null;
+
+    if (data.status === "available") {
+      currentFortune = null;
+      crackLevel = 0;
+      render();
+      return;
+    }
+
+    if (data.fortune) {
+      currentFortune = data.fortune;
+      crackLevel = data.status === "already_drawn" ? 3 : 0;
+    }
+
     render();
+  };
+
+  const fetchFortune = async (action = null) => {
+    const url = action ? `${fortuneEndpoint}?action=${action}` : fortuneEndpoint;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("포춘쿠키를 불러오지 못했어요.");
+    }
+    return response.json();
+  };
+
+  const drawFortune = async () => {
+    try {
+      const data = await fetchFortune("draw");
+      applyFortuneResponse(data);
+    } catch (error) {
+      fortuneHint.textContent = "잠시 후 다시 시도해주세요.";
+    }
   };
 
   const crackCookie = () => {
@@ -111,7 +150,9 @@
     render();
   };
 
-  drawButton.addEventListener("click", drawFortune);
+  drawButton.addEventListener("click", () => {
+    drawFortune();
+  });
   cookie.addEventListener("click", crackCookie);
   cookie.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -120,6 +161,8 @@
     }
   });
 
-  render();
+  fetchFortune()
+    .then((data) => applyFortuneResponse(data))
+    .catch(() => render());
 </script>
 {% endblock %}

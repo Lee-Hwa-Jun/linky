@@ -238,7 +238,7 @@ span {
 .lucky-card {
   width: 100%;
   max-width: 420px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 245, 245, 0.75));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 240, 245, 0.82));
   border-radius: 32px;
   padding: 28px 24px 32px;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.15);
@@ -284,11 +284,11 @@ span {
   height: 100%;
   padding: 18px;
   border-radius: 28px;
-  background: linear-gradient(135deg, rgba(255, 245, 236, 0.9), rgba(255, 255, 255, 0.7));
+  background: linear-gradient(135deg, rgba(255, 245, 236, 0.95), rgba(255, 255, 255, 0.82));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 20px 35px rgba(15, 23, 42, 0.12);
-  border: 1px solid rgba(255, 214, 224, 0.65);
+    0 18px 32px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 214, 224, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -358,15 +358,15 @@ span {
   font-size: 1rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #f97316, #fb7185);
-  box-shadow: 0 16px 30px rgba(251, 113, 133, 0.35);
+  background: linear-gradient(135deg, #ff8fb1, #ffb6c1);
+  box-shadow: 0 16px 30px rgba(255, 143, 177, 0.35);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .fortune-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 36px rgba(251, 113, 133, 0.4);
+  box-shadow: 0 20px 36px rgba(255, 143, 177, 0.4);
 }
 
 .fortune-counter {
@@ -374,6 +374,71 @@ span {
   font-size: 0.8rem;
   text-align: center;
   color: rgba(120, 54, 10, 0.7);
+}
+
+.lucky-ad {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lucky-ad__label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.lucky-ad__card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  text-decoration: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 235, 244, 0.9));
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 200, 220, 0.8);
+  color: var(--text-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lucky-ad__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(15, 23, 42, 0.16);
+}
+
+.lucky-ad__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lucky-ad__title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #9a1b4d;
+}
+
+.lucky-ad__subtitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lucky-ad__cta {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8fb1, #ffb6c1);
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 10px 20px rgba(255, 143, 177, 0.35);
 }
 
 @media (min-width: 768px) {
