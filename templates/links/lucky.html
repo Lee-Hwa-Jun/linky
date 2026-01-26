@@ -74,7 +74,6 @@
                 {% endif %}
               {% endif %}
               <div class="lucky-ad__text">
-                <p class="lucky-ad__title">{{ ad_profile.name }}</p>
                 <p class="lucky-ad__subtitle">{{ ad_link.label }}</p>
               </div>
             </div>
@@ -108,22 +107,22 @@ const drawButton = document.getElementById("drawButton");
   const resetButton = document.getElementById("resetButton");
 
   let currentFortune = null;
-  let crackLevel = 0;
+  let crackLevel = -1;
   let statusMessage = null;
 
   // [중요 수정] dataset 대신 getAttribute를 사용하여 값을 확실하게 가져옵니다.
   const fallbackImage = fortuneImage.getAttribute("src");
-  const resetImage = fortuneImage.getAttribute("data-stage-reset") || fallbackImage; // 뽑기전단계
   const imageStages = [
     fortuneImage.getAttribute("data-stage-0") || fallbackImage, // 0단계
     fortuneImage.getAttribute("data-stage-1") || fallbackImage, // 1단계
     fortuneImage.getAttribute("data-stage-2") || fallbackImage, // 2단계
     fortuneImage.getAttribute("data-stage-3") || fallbackImage, // 3단계
+    fortuneImage.getAttribute("data-stage-reset") || fallbackImage, // -1단계
   ];
 
   const render = () => {
     // 현재 단계에 맞는 이미지 경로 가져오기
-    const nextImage = imageStages[crackLevel] || imageStages[0];
+    const nextImage = imageStages[crackLevel] || imageStages[3];
 
     // 이미지 변경 적용
     fortuneImage.src = nextImage;
@@ -181,9 +180,8 @@ const drawButton = document.getElementById("drawButton");
 
   const resetFortune = async () => {
     try {
-      fortuneImage.src = resetImage;
       currentFortune = null;
-      crackLevel = 0;
+      crackLevel = -1;
       const data = await fetchFortune("reset");
       applyFortuneResponse(data);
     } catch (error) {
