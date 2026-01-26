@@ -105,54 +105,65 @@
   let currentFortune = null;
   let crackLevel = 0;
   let statusMessage = null;
-  let isLocked = false;
 
+  // 이미지 경로 배열 (fallback 처리 포함)
   const fallbackImage = fortuneImage.getAttribute("src");
   const imageStages = [
-    fortuneImage.dataset.stage0 || fallbackImage,
-    fortuneImage.dataset.stage1 || fallbackImage,
-    fortuneImage.dataset.stage2 || fallbackImage,
-    fortuneImage.dataset.stage3 || fallbackImage,
+    fortuneImage.dataset.stage0 || fallbackImage, // fortune1 (0단계)
+    fortuneImage.dataset.stage1 || fallbackImage, // fortune2 (1단계)
+    fortuneImage.dataset.stage2 || fallbackImage, // fortune3 (2단계)
+    fortuneImage.dataset.stage3 || fallbackImage, // fortune4 (3단계 - 깨짐)
   ];
 
+  // [수정 포인트 1] 화면 그리기 로직 개선 (버튼 숨김/표시 및 이미지 변경)
   const render = () => {
+    // 1. 깨짐 단계에 따른 이미지 변경
     fortuneImage.src = imageStages[crackLevel] || imageStages[0];
 
+    // 2. 텍스트 및 종이 노출 로직
     if (currentFortune && crackLevel >= 3) {
+      // 완전히 깨짐 (3단계 이상)
       paper.classList.add("fortune-paper--visible");
       fortuneText.textContent = currentFortune;
-      fortuneHint.textContent = statusMessage || "쿠키가 열렸어요! 새로운 쿠키를 뽑아볼까요?";
+      fortuneHint.textContent = statusMessage || "쿠키가 열렸어요! (내일 또 오세요)";
     } else if (currentFortune) {
+      // 진행 중 (0~2단계)
       paper.classList.remove("fortune-paper--visible");
-      fortuneHint.textContent = statusMessage || "쿠키를 3번 눌러 깨뜨려주세요.";
+      fortuneHint.textContent = "쿠키를 톡톡 눌러 깨뜨려주세요!";
     } else {
+      // 초기 상태 (쿠키 없음)
       paper.classList.remove("fortune-paper--visible");
       fortuneText.textContent = "버튼을 눌러 포춘쿠키를 뽑아주세요.";
       fortuneHint.textContent = statusMessage || "아직 쿠키를 뽑지 않았어요.";
     }
 
+    // 3. 버튼 표시 관리 (요청하신 기능)
+    if (drawButton) {
+      // 쿠키가 있으면(뽑았으면) 뽑기 버튼 숨김
+      drawButton.hidden = currentFortune !== null;
+    }
+
     if (resetButton) {
-      resetButton.hidden = !isLocked;
+      // 쿠키가 완전히 깨졌을 때만 초기화 버튼 표시 (또는 이미 완료된 상태일 때)
+      resetButton.hidden = !(crackLevel >= 3);
     }
 
     fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
   };
 
+  // [수정 포인트 2] 데이터 응답 처리 로직 (상태 초기화 확실하게)
   const applyFortuneResponse = (data) => {
     statusMessage = data.message || null;
 
     if (data.status === "available") {
+      // 초기화 상태
       currentFortune = null;
       crackLevel = 0;
-      isLocked = false;
-      render();
-      return;
-    }
-
-    if (data.fortune) {
+    } else if (data.fortune) {
+      // 쿠키 뽑음
       currentFortune = data.fortune;
+      // 이미 DB에 '뽑음' 상태로 저장되어 있다면 3(완료), 방금 뽑았으면 0(시작)
       crackLevel = data.status === "already_drawn" ? 3 : 0;
-      isLocked = data.status === "already_drawn";
     }
 
     render();
@@ -172,6 +183,7 @@
       const data = await fetchFortune("draw");
       applyFortuneResponse(data);
     } catch (error) {
+      console.error(error);
       fortuneHint.textContent = "잠시 후 다시 시도해주세요.";
     }
   };
@@ -181,32 +193,37 @@
       const data = await fetchFortune("reset");
       applyFortuneResponse(data);
     } catch (error) {
-      fortuneHint.textContent = "초기화에 실패했어요. 잠시 후 다시 시도해주세요.";
+      console.error(error);
+      fortuneHint.textContent = "초기화에 실패했어요.";
     }
   };
 
+  // [수정 포인트 3] 쿠키 클릭 로직 (뽑기 전 클릭 방지)
   const crackCookie = () => {
+    // 쿠키를 아직 안 뽑았으면 반응하지 않음
     if (!currentFortune) {
-      fortuneHint.textContent = "먼저 포춘쿠키를 뽑아주세요.";
+      fortuneHint.textContent = "먼저 [포춘쿠키 뽑기] 버튼을 눌러주세요!";
+      // 텍스트 강조 애니메이션 등을 추가해도 좋음
       return;
     }
 
+    // 이미 다 깨졌으면 반응하지 않음
     if (crackLevel >= 3) {
       return;
     }
 
+    // 단계 증가 및 렌더링
     crackLevel += 1;
     render();
   };
 
-  drawButton.addEventListener("click", () => {
-    drawFortune();
-  });
+  // 이벤트 리스너 연결
+  drawButton.addEventListener("click", drawFortune);
+
   if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      resetFortune();
-    });
+    resetButton.addEventListener("click", resetFortune);
   }
+
   cookie.addEventListener("click", crackCookie);
   cookie.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -215,6 +232,7 @@
     }
   });
 
+  // 초기 로드 시 상태 확인
   fetchFortune()
     .then((data) => applyFortuneResponse(data))
     .catch(() => render());
