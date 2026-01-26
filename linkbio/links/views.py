@@ -61,3 +61,7 @@ def profile_links(request, slug: str):
     profile = get_object_or_404(Profile.objects.active(), slug=slug)
     links = random.choice(list(profile.links.values_list("url", flat=True)))
     return JsonResponse({"links": links})
+
+
+def lucky(request):
+    return render(request, "links/lucky.html")
