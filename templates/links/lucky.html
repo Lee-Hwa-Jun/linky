@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}포춘쿠키 | 링크 모음{% endblock %}
+
+{% block content %}
+<div class="lucky-page">
+  <header class="lucky-header">
+    <p class="lucky-eyebrow">오늘의 포츈</p>
+    <h1 class="lucky-title">포춘쿠키를 뽑아보세요</h1>
+    <p class="lucky-subtitle">버튼을 누르고 쿠키를 톡톡 눌러 종이를 확인하세요.</p>
+  </header>
+
+  <main class="lucky-card">
+    <div class="fortune-stage">
+      <div
+        class="fortune-cookie"
+        id="fortuneCookie"
+        role="button"
+        tabindex="0"
+        aria-label="포춘쿠키를 클릭해 깨뜨리기"
+      >
+        <svg
+          class="fortune-cookie__svg"
+          viewBox="0 0 280 180"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="cookieBase" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#f9d58b" />
+              <stop offset="45%" stop-color="#f5b563" />
+              <stop offset="100%" stop-color="#e57f2c" />
+            </linearGradient>
+            <linearGradient id="cookieDeep" x1="0" x2="1" y1="1" y2="0">
+              <stop offset="0%" stop-color="#f5b563" />
+              <stop offset="100%" stop-color="#d66b1f" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="140" cy="140" rx="110" ry="25" fill="rgba(126, 63, 12, 0.25)" />
+          <path
+            d="M40 90c30-55 170-55 200 0-20 50-60 70-100 70S60 140 40 90z"
+            fill="url(#cookieBase)"
+          />
+          <path
+            d="M70 80c40-40 120-40 160 0-15 35-40 55-80 55S85 115 70 80z"
+            fill="url(#cookieDeep)"
+            opacity="0.85"
+          />
+          <path
+            d="M85 70c20-18 90-20 110 0"
+            stroke="rgba(255,255,255,0.7)"
+            stroke-width="12"
+            stroke-linecap="round"
+          />
+          <g class="fortune-crack crack-1">
+            <path d="M120 65l-18 22 24 18-12 20" />
+          </g>
+          <g class="fortune-crack crack-2">
+            <path d="M150 60l18 24-22 16 14 22" />
+          </g>
+          <g class="fortune-crack crack-3">
+            <path d="M135 58l-10 26 28 20-18 24" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="fortune-paper" id="fortunePaper" aria-live="polite">
+        <p class="fortune-paper__label">오늘의 메시지</p>
+        <p class="fortune-paper__text" id="fortuneText">버튼을 눌러 포춘쿠키를 뽑아주세요.</p>
+      </div>
+    </div>
+
+    <p class="fortune-hint" id="fortuneHint">아직 쿠키를 뽑지 않았어요.</p>
+    <button class="fortune-button" id="drawButton" type="button">포춘쿠키 뽑기</button>
+    <p class="fortune-counter" id="fortuneCounter">깨짐 단계: 0 / 3</p>
+  </main>
+</div>
+
+<script>
+  const fortunes = [
+    "오늘의 선택이 내일의 즐거움을 만듭니다.",
+    "좋은 대답은 천천히, 좋은 행운은 갑자기 찾아와요.",
+    "마음이 가는 길에 작은 선물을 발견하게 될 거예요.",
+  ];
+
+  const drawButton = document.getElementById("drawButton");
+  const cookie = document.getElementById("fortuneCookie");
+  const paper = document.getElementById("fortunePaper");
+  const fortuneText = document.getElementById("fortuneText");
+  const fortuneHint = document.getElementById("fortuneHint");
+  const fortuneCounter = document.getElementById("fortuneCounter");
+
+  let currentFortune = null;
+  let crackLevel = 0;
+
+  const crackClasses = [
+    "fortune-cookie--crack-1",
+    "fortune-cookie--crack-2",
+    "fortune-cookie--crack-3",
+  ];
+
+  const resetCracks = () => {
+    cookie.classList.remove(...crackClasses);
+  };
+
+  const render = () => {
+    resetCracks();
+    if (crackLevel > 0) {
+      cookie.classList.add(crackClasses[crackLevel - 1]);
+    }
+
+    if (currentFortune && crackLevel >= 3) {
+      paper.classList.add("fortune-paper--visible");
+      fortuneText.textContent = currentFortune;
+      fortuneHint.textContent = "쿠키가 열렸어요! 새로운 쿠키를 뽑아볼까요?";
+    } else if (currentFortune) {
+      paper.classList.remove("fortune-paper--visible");
+      fortuneHint.textContent = "쿠키를 3번 눌러 깨뜨려주세요.";
+    } else {
+      paper.classList.remove("fortune-paper--visible");
+      fortuneText.textContent = "버튼을 눌러 포춘쿠키를 뽑아주세요.";
+      fortuneHint.textContent = "아직 쿠키를 뽑지 않았어요.";
+    }
+
+    fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
+  };
+
+  const drawFortune = () => {
+    const nextFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+    currentFortune = nextFortune;
+    crackLevel = 0;
+    render();
+  };
+
+  const crackCookie = () => {
+    if (!currentFortune) {
+      fortuneHint.textContent = "먼저 포춘쿠키를 뽑아주세요.";
+      return;
+    }
+
+    if (crackLevel >= 3) {
+      return;
+    }
+
+    crackLevel += 1;
+    render();
+  };
+
+  drawButton.addEventListener("click", drawFortune);
+  cookie.addEventListener("click", crackCookie);
+  cookie.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      crackCookie();
+    }
+  });
+
+  render();
+</script>
+{% endblock %}
