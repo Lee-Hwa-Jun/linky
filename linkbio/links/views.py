@@ -1106,6 +1106,16 @@ def fortune_status(request):
     today = timezone.localdate()
     cache_key = _fortune_cache_key(ip_address, today)
     cached = cache.get(cache_key)
+    action = request.GET.get("action")
+
+    if action == "reset":
+        cache.delete(cache_key)
+        return JsonResponse(
+            {
+                "status": "available",
+                "message": "포춘쿠키를 다시 뽑을 수 있어요!",
+            }
+        )
 
     if cached is not None:
         index = cached.get("index", 0)
@@ -1119,7 +1129,7 @@ def fortune_status(request):
             }
         )
 
-    if request.GET.get("action") == "draw":
+    if action == "draw":
         index = random.randrange(len(FORTUNES))
         cache.set(cache_key, {"index": index}, timeout=_seconds_until_midnight())
         return JsonResponse(

@@ -364,6 +364,19 @@ span {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.fortune-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fortune-button--ghost {
+  background: #fff;
+  color: #9a1b4d;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 12px 24px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 200, 220, 0.8);
+}
+
 .fortune-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 20px 36px rgba(255, 143, 177, 0.4);
@@ -413,6 +426,11 @@ span {
 }
 
 .lucky-ad__meta {
+  display: flex;
+  gap: 10px;
+}
+
+.lucky-ad__text {
   display: flex;
   flex-direction: column;
   gap: 4px;

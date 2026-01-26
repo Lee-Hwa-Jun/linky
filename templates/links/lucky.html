@@ -42,19 +42,50 @@
     </div>
 
     <p class="fortune-hint" id="fortuneHint">아직 쿠키를 뽑지 않았어요.</p>
-    <button class="fortune-button" id="drawButton" type="button">포춘쿠키 뽑기</button>
+    <div class="fortune-actions">
+      <button class="fortune-button" id="drawButton" type="button">포춘쿠키 뽑기</button>
+      <button class="fortune-button fortune-button--ghost" id="resetButton" type="button" hidden>
+        오늘 기록 초기화
+      </button>
+    </div>
     <p class="fortune-counter" id="fortuneCounter">깨짐 단계: 0 / 3</p>
   </main>
 
   {% if ad_link %}
     <section class="lucky-ad">
       <p class="lucky-ad__label">추천 링크</p>
-      <a class="lucky-ad__card" href="{{ ad_link.url }}" target="_blank" rel="noopener noreferrer">
-        <div class="lucky-ad__meta">
-          <p class="lucky-ad__title">{{ ad_profile.name }}</p>
-          <p class="lucky-ad__subtitle">{{ ad_link.label }}</p>
+      <a
+        class="hero__button lucky-ad__card"
+        href="{{ ad_link.url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div class="hero__button-leading lucky-ad__meta">
+          {% if ad_link.icon_image or ad_link.icon %}
+            {% if ad_link.icon_image_url %}
+              <span class="hero__icon hero__icon--image">
+                <img src="{{ ad_link.icon_image_url }}" alt="" loading="lazy" class="hero__icon-img" />
+              </span>
+            {% else %}
+              <span class="hero__icon">{{ ad_link.icon }}</span>
+            {% endif %}
+          {% endif %}
+          <div class="lucky-ad__text">
+            <p class="lucky-ad__title">{{ ad_profile.name }}</p>
+            <p class="lucky-ad__subtitle">{{ ad_link.label }}</p>
+          </div>
         </div>
-        <span class="lucky-ad__cta">바로가기</span>
+        <div class="hero__button-meta">
+          {% if ad_link.show_discount_badge %}
+            <span class="hero__sale"> 💸할인 </span>
+          {% endif %}
+          {% if ad_link.show_popular_badge %}
+            <span class="hero__best"> 👍인기 </span>
+          {% endif %}
+          {% if ad_profile.show_total_clicks %}
+            <span class="hero__clicks">♥️{{ ad_link.click_count }}</span>
+          {% endif %}
+        </div>
       </a>
     </section>
   {% endif %}
@@ -69,16 +100,19 @@
   const fortuneHint = document.getElementById("fortuneHint");
   const fortuneCounter = document.getElementById("fortuneCounter");
   const fortuneEndpoint = cookie.dataset.endpoint;
+  const resetButton = document.getElementById("resetButton");
 
   let currentFortune = null;
   let crackLevel = 0;
   let statusMessage = null;
+  let isLocked = false;
 
+  const fallbackImage = fortuneImage.getAttribute("src");
   const imageStages = [
-    fortuneImage.dataset.stage0,
-    fortuneImage.dataset.stage1,
-    fortuneImage.dataset.stage2,
-    fortuneImage.dataset.stage3,
+    fortuneImage.dataset.stage0 || fallbackImage,
+    fortuneImage.dataset.stage1 || fallbackImage,
+    fortuneImage.dataset.stage2 || fallbackImage,
+    fortuneImage.dataset.stage3 || fallbackImage,
   ];
 
   const render = () => {
@@ -97,6 +131,10 @@
       fortuneHint.textContent = statusMessage || "아직 쿠키를 뽑지 않았어요.";
     }
 
+    if (resetButton) {
+      resetButton.hidden = !isLocked;
+    }
+
     fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
   };
 
@@ -106,6 +144,7 @@
     if (data.status === "available") {
       currentFortune = null;
       crackLevel = 0;
+      isLocked = false;
       render();
       return;
     }
@@ -113,6 +152,7 @@
     if (data.fortune) {
       currentFortune = data.fortune;
       crackLevel = data.status === "already_drawn" ? 3 : 0;
+      isLocked = data.status === "already_drawn";
     }
 
     render();
@@ -136,6 +176,15 @@
     }
   };
 
+  const resetFortune = async () => {
+    try {
+      const data = await fetchFortune("reset");
+      applyFortuneResponse(data);
+    } catch (error) {
+      fortuneHint.textContent = "초기화에 실패했어요. 잠시 후 다시 시도해주세요.";
+    }
+  };
+
   const crackCookie = () => {
     if (!currentFortune) {
       fortuneHint.textContent = "먼저 포춘쿠키를 뽑아주세요.";
@@ -153,6 +202,11 @@
   drawButton.addEventListener("click", () => {
     drawFortune();
   });
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      resetFortune();
+    });
+  }
   cookie.addEventListener("click", crackCookie);
   cookie.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
