@@ -101,34 +101,34 @@
   const fortuneHint = document.getElementById("fortuneHint");
   const fortuneCounter = document.getElementById("fortuneCounter");
   const fortuneEndpoint = cookie.dataset.endpoint;
-  const adLinks = document.querySelectorAll('.lucky-ad__card'); // 광고 링크들 선택
+  const adLinks = document.querySelectorAll('.lucky-ad__card');
 
   let currentFortune = null;
-  let crackLevel = 0; // 0, 1, 2, 3 단계
+  let crackLevel = 0;
   let statusMessage = null;
 
   // 이미지 경로 설정
   const fallbackImage = fortuneImage.getAttribute("src");
-  const resetImage = fortuneImage.getAttribute("data-stage-reset") || fallbackImage; // 상자 이미지
+  const resetImage = fortuneImage.getAttribute("data-stage-reset") || fallbackImage; // 상자
 
   const imageStages = [
-    fortuneImage.getAttribute("data-stage-0") || fallbackImage, // 0단계 (쿠키 원형)
-    fortuneImage.getAttribute("data-stage-1") || fallbackImage, // 1단계 (금)
-    fortuneImage.getAttribute("data-stage-2") || fallbackImage, // 2단계 (많이 금)
-    fortuneImage.getAttribute("data-stage-3") || fallbackImage, // 3단계 (깨짐)
+    fortuneImage.getAttribute("data-stage-0") || fallbackImage, // 0단계
+    fortuneImage.getAttribute("data-stage-1") || fallbackImage, // 1단계
+    fortuneImage.getAttribute("data-stage-2") || fallbackImage, // 2단계
+    fortuneImage.getAttribute("data-stage-3") || fallbackImage, // 3단계
   ];
 
   const render = () => {
     // [B 로직] 이미지가 뽑기 전(null)이면 상자, 아니면 단계별 이미지
     if (!currentFortune) {
-      fortuneImage.src = resetImage; // 상자 이미지
+      fortuneImage.src = resetImage;
     } else {
-      fortuneImage.src = imageStages[crackLevel] || imageStages[3]; // 쿠키 이미지 (0~3)
+      fortuneImage.src = imageStages[crackLevel] || imageStages[3];
     }
 
     // [텍스트 및 상태 처리]
     if (currentFortune && crackLevel >= 3) {
-      // 완료 상태 (A 로직 멘트 적용)
+      // 완료 상태
       paper.classList.add("fortune-paper--visible");
       fortuneText.textContent = currentFortune;
       fortuneHint.innerHTML = "이미 오늘의 포춘쿠키를 뽑았어요.<br>아래 링크를 클릭하여 초기화 하거나, 내일 다시 와주세요!";
@@ -143,10 +143,8 @@
       fortuneHint.textContent = statusMessage || "아직 쿠키를 뽑지 않았어요.";
     }
 
-    // 버튼 숨김 처리
     if (drawButton) drawButton.hidden = currentFortune !== null;
 
-    // 카운터 표시 (뽑은 상태일 때만)
     if (currentFortune) {
         fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
         fortuneCounter.style.visibility = 'visible';
@@ -155,18 +153,24 @@
     }
   };
 
-  const applyFortuneResponse = (data) => {
+  // [수정 포인트] isNewDraw 파라미터 추가 (기본값 false)
+  const applyFortuneResponse = (data, isNewDraw = false) => {
     statusMessage = data.message || null;
 
     if (data.status === "available") {
-      // 뽑기 가능 상태 (초기화 됨)
       currentFortune = null;
       crackLevel = 0;
     } else if (data.fortune) {
-      // 이미 뽑은 상태 or 방금 뽑음
       currentFortune = data.fortune;
-      // 이미 DB에 기록이 있으면 3(완료), 방금 뽑는거면 0(시작)
-      crackLevel = data.status === "already_drawn" ? 3 : 0;
+
+      // [핵심 수정]
+      // 방금 버튼을 눌러 뽑은 것(isNewDraw)이라면 무조건 0부터 시작
+      // 그게 아니라 새로고침해서 들어온 것이라면 DB상태(already_drawn)를 따름
+      if (isNewDraw) {
+        crackLevel = 0;
+      } else {
+        crackLevel = data.status === "already_drawn" ? 3 : 0;
+      }
     }
     render();
   };
@@ -178,17 +182,17 @@
     return response.json();
   };
 
-  // [뽑기 버튼 클릭]
+  // [수정 포인트] draw 호출 시 true 전달
   const drawFortune = async () => {
     try {
       const data = await fetchFortune("draw");
-      applyFortuneResponse(data);
+      // 여기 true를 넣어서 "방금 내가 버튼 눌렀어! 0부터 보여줘!" 라고 알림
+      applyFortuneResponse(data, true);
     } catch (error) {
       console.error(error);
     }
   };
 
-  // [쿠키 클릭]
   const crackCookie = () => {
     if (!currentFortune) {
       fortuneHint.textContent = "먼저 [포춘쿠키 뽑기] 버튼을 눌러주세요!";
@@ -200,19 +204,15 @@
     render();
   };
 
-  // [A 로직] 링크 클릭 시 자동 초기화 함수
   const handleLinkClickReset = () => {
-    // 1. 서버에 초기화 요청 (비동기)
     fetchFortune("reset").catch(e => console.error("초기화 실패", e));
 
-    // 2. 현재 화면 즉시 초기화 (사용자가 돌아왔을 때를 대비)
     currentFortune = null;
     crackLevel = 0;
     statusMessage = "초기화 되었습니다. 다시 뽑아보세요!";
     render();
   };
 
-  // 이벤트 리스너 연결
   drawButton.addEventListener("click", drawFortune);
   cookie.addEventListener("click", crackCookie);
   cookie.addEventListener("keydown", (event) => {
@@ -222,14 +222,13 @@
     }
   });
 
-  // 모든 광고 링크에 클릭 이벤트 추가
   adLinks.forEach(link => {
     link.addEventListener("click", handleLinkClickReset);
   });
 
-  // 초기 로딩
+  // 초기 로딩 시에는 false(기본값)이므로, 이미 뽑은 상태면 바로 결과가 보임
   fetchFortune()
-    .then((data) => applyFortuneResponse(data))
+    .then((data) => applyFortuneResponse(data)) // isNewDraw 생략 -> false
     .catch(() => render());
 </script>
 {% endblock %}
