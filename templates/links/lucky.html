@@ -27,6 +27,7 @@
             class="fortune-image"
             src="{% static 'image_src/fortune_box.png' %}"
             alt="포춘쿠키 이미지"
+            data-stage-reset="{% static 'image_src/fortune_box.png' %}"
             data-stage-0="{% static 'image_src/fortune1.png' %}"
             data-stage-1="{% static 'image_src/fortune2.png' %}"
             data-stage-2="{% static 'image_src/fortune3.png' %}"
@@ -112,6 +113,7 @@ const drawButton = document.getElementById("drawButton");
 
   // [중요 수정] dataset 대신 getAttribute를 사용하여 값을 확실하게 가져옵니다.
   const fallbackImage = fortuneImage.getAttribute("src");
+  const resetImage = fortuneImage.getAttribute("data-stage-reset") || fallbackImage; // 뽑기전단계
   const imageStages = [
     fortuneImage.getAttribute("data-stage-0") || fallbackImage, // 0단계
     fortuneImage.getAttribute("data-stage-1") || fallbackImage, // 1단계
@@ -119,16 +121,12 @@ const drawButton = document.getElementById("drawButton");
     fortuneImage.getAttribute("data-stage-3") || fallbackImage, // 3단계
   ];
 
-  // 이미지가 제대로 로딩되었는지 콘솔에서 확인 (F12 -> Console 탭)
-  console.log("로드된 이미지 단계:", imageStages);
-
   const render = () => {
     // 현재 단계에 맞는 이미지 경로 가져오기
     const nextImage = imageStages[crackLevel] || imageStages[0];
 
     // 이미지 변경 적용
     fortuneImage.src = nextImage;
-    console.log(`현재 레벨: ${crackLevel}, 이미지 변경: ${nextImage}`);
 
     // 텍스트 및 상태 처리
     if (currentFortune && crackLevel >= 3) {
@@ -182,6 +180,9 @@ const drawButton = document.getElementById("drawButton");
   const resetFortune = async () => {
     try {
       const data = await fetchFortune("reset");
+      fortuneImage.src = resetImage;
+      currentFortune = null;
+      crackLevel = 0;
       applyFortuneResponse(data);
     } catch (error) {
       console.error(error);
