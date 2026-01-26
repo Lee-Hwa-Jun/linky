@@ -198,6 +198,287 @@ span {
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
 }
 
+.lucky-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 48px;
+  gap: 24px;
+}
+
+.lucky-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 420px;
+}
+
+.lucky-eyebrow {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #f97316;
+  font-weight: 700;
+}
+
+.lucky-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.lucky-subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.lucky-card {
+  width: 100%;
+  max-width: 420px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 240, 245, 0.82));
+  border-radius: 32px;
+  padding: 28px 24px 32px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.fortune-stage {
+  position: relative;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.fortune-cookie {
+  position: relative;
+  width: min(280px, 100%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fortune-cookie:focus-visible {
+  outline: 3px solid rgba(248, 113, 113, 0.6);
+  outline-offset: 4px;
+}
+
+.fortune-cookie:hover {
+  transform: translateY(-3px);
+  filter: drop-shadow(0 18px 32px rgba(105, 56, 0, 0.25));
+}
+
+.fortune-frame {
+  width: 100%;
+  height: 100%;
+  padding: 18px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(255, 245, 236, 0.95), rgba(255, 255, 255, 0.82));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 18px 32px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 214, 224, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fortune-image {
+  width: min(230px, 100%);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 24px rgba(94, 43, 6, 0.3));
+  transition: transform 0.2s ease;
+}
+
+.fortune-cookie:hover .fortune-image {
+  transform: scale(1.02);
+}
+
+
+.fortune-paper {
+  position: absolute;
+  bottom: 12px;
+  width: min(240px, 90%);
+  padding: 16px 18px;
+  background: #fff8e7;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(226, 197, 134, 0.6);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  text-align: center;
+}
+
+.fortune-paper--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fortune-paper__label {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.fortune-paper__text {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #7c2d12;
+  line-height: 1.4;
+}
+
+.fortune-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.fortune-button {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8fb1, #ffb6c1);
+  box-shadow: 0 16px 30px rgba(255, 143, 177, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fortune-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fortune-button--ghost {
+  background: #fff;
+  color: #9a1b4d;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 12px 24px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 200, 220, 0.8);
+}
+
+.fortune-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(255, 143, 177, 0.4);
+}
+
+.fortune-counter {
+  margin: 0;
+  font-size: 0.8rem;
+  text-align: center;
+  color: rgba(120, 54, 10, 0.7);
+}
+
+.lucky-ad {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lucky-ad__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lucky-ad__label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.lucky-ad__card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  text-decoration: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 235, 244, 0.9));
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(255, 200, 220, 0.8);
+  color: var(--text-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lucky-ad__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(15, 23, 42, 0.16);
+}
+
+.lucky-ad__meta {
+  display: flex;
+  gap: 10px;
+}
+
+.lucky-ad__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lucky-ad__title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #9a1b4d;
+}
+
+.lucky-ad__subtitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lucky-ad__cta {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8fb1, #ffb6c1);
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 10px 20px rgba(255, 143, 177, 0.35);
+}
+
+@media (min-width: 768px) {
+  .lucky-title {
+    font-size: 2rem;
+  }
+
+  .fortune-stage {
+    height: 300px;
+  }
+
+  .fortune-cookie {
+    height: 100%;
+  }
+}
+
 .hero__chip {
   padding: 6px 12px;
   border-radius: 999px;
