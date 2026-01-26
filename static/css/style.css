@@ -259,6 +259,7 @@ span {
 
 .fortune-cookie {
   position: relative;
+
   width: 240px;
   height: 170px;
   display: flex;
