@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}포춘쿠키 | 링크 모음{% endblock %}
+
+{% block content %}
+<div class="lucky-page">
+  <header class="lucky-header">
+    <p class="lucky-eyebrow">오늘의 포츈</p>
+    <h1 class="lucky-title">포춘쿠키를 뽑아보세요</h1>
+    <p class="lucky-subtitle">버튼을 누르고 쿠키를 톡톡 눌러 종이를 확인하세요.</p>
+  </header>
+
+  <main class="lucky-card">
+    <div class="fortune-stage">
+      <div
+        class="fortune-cookie"
+        id="fortuneCookie"
+        data-endpoint="{% url 'links:fortune_status' %}"
+        role="button"
+        tabindex="0"
+        aria-label="포춘쿠키를 클릭해 깨뜨리기"
+      >
+        <div class="fortune-frame">
+          <img
+            id="fortuneImage"
+            class="fortune-image"
+            src="{% static 'image_src/fortune1.png' %}"
+            alt="포춘쿠키 이미지"
+            data-stage-0="{% static 'image_src/fortune1.png' %}"
+            data-stage-1="{% static 'image_src/fortune2.png' %}"
+            data-stage-2="{% static 'image_src/fortune3.png' %}"
+            data-stage-3="{% static 'image_src/fortune4.png' %}"
+          />
+        </div>
+      </div>
+
+      <div class="fortune-paper" id="fortunePaper" aria-live="polite">
+        <p class="fortune-paper__label">오늘의 메시지</p>
+        <p class="fortune-paper__text" id="fortuneText">버튼을 눌러 포춘쿠키를 뽑아주세요.</p>
+      </div>
+    </div>
+
+    <p class="fortune-hint" id="fortuneHint">아직 쿠키를 뽑지 않았어요.</p>
+    <div class="fortune-actions">
+      <button class="fortune-button" id="drawButton" type="button">포춘쿠키 뽑기</button>
+      <button class="fortune-button fortune-button--ghost" id="resetButton" type="button" hidden>
+        오늘 기록 초기화
+      </button>
+    </div>
+    <p class="fortune-counter" id="fortuneCounter">깨짐 단계: 0 / 3</p>
+  </main>
+
+  {% if ad_link %}
+    <section class="lucky-ad">
+      <p class="lucky-ad__label">추천 링크</p>
+      <a
+        class="hero__button lucky-ad__card"
+        href="{{ ad_link.url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div class="hero__button-leading lucky-ad__meta">
+          {% if ad_link.icon_image or ad_link.icon %}
+            {% if ad_link.icon_image_url %}
+              <span class="hero__icon hero__icon--image">
+                <img src="{{ ad_link.icon_image_url }}" alt="" loading="lazy" class="hero__icon-img" />
+              </span>
+            {% else %}
+              <span class="hero__icon">{{ ad_link.icon }}</span>
+            {% endif %}
+          {% endif %}
+          <div class="lucky-ad__text">
+            <p class="lucky-ad__title">{{ ad_profile.name }}</p>
+            <p class="lucky-ad__subtitle">{{ ad_link.label }}</p>
+          </div>
+        </div>
+        <div class="hero__button-meta">
+          {% if ad_link.show_discount_badge %}
+            <span class="hero__sale"> 💸할인 </span>
+          {% endif %}
+          {% if ad_link.show_popular_badge %}
+            <span class="hero__best"> 👍인기 </span>
+          {% endif %}
+          {% if ad_profile.show_total_clicks %}
+            <span class="hero__clicks">♥️{{ ad_link.click_count }}</span>
+          {% endif %}
+        </div>
+      </a>
+    </section>
+  {% endif %}
+</div>
+
+<script>
+  const drawButton = document.getElementById("drawButton");
+  const cookie = document.getElementById("fortuneCookie");
+  const fortuneImage = document.getElementById("fortuneImage");
+  const paper = document.getElementById("fortunePaper");
+  const fortuneText = document.getElementById("fortuneText");
+  const fortuneHint = document.getElementById("fortuneHint");
+  const fortuneCounter = document.getElementById("fortuneCounter");
+  const fortuneEndpoint = cookie.dataset.endpoint;
+  const resetButton = document.getElementById("resetButton");
+
+  let currentFortune = null;
+  let crackLevel = 0;
+  let statusMessage = null;
+  let isLocked = false;
+
+  const fallbackImage = fortuneImage.getAttribute("src");
+  const imageStages = [
+    fortuneImage.dataset.stage0 || fallbackImage,
+    fortuneImage.dataset.stage1 || fallbackImage,
+    fortuneImage.dataset.stage2 || fallbackImage,
+    fortuneImage.dataset.stage3 || fallbackImage,
+  ];
+
+  const render = () => {
+    fortuneImage.src = imageStages[crackLevel] || imageStages[0];
+
+    if (currentFortune && crackLevel >= 3) {
+      paper.classList.add("fortune-paper--visible");
+      fortuneText.textContent = currentFortune;
+      fortuneHint.textContent = statusMessage || "쿠키가 열렸어요! 새로운 쿠키를 뽑아볼까요?";
+    } else if (currentFortune) {
+      paper.classList.remove("fortune-paper--visible");
+      fortuneHint.textContent = statusMessage || "쿠키를 3번 눌러 깨뜨려주세요.";
+    } else {
+      paper.classList.remove("fortune-paper--visible");
+      fortuneText.textContent = "버튼을 눌러 포춘쿠키를 뽑아주세요.";
+      fortuneHint.textContent = statusMessage || "아직 쿠키를 뽑지 않았어요.";
+    }
+
+    if (resetButton) {
+      resetButton.hidden = !isLocked;
+    }
+
+    fortuneCounter.textContent = `깨짐 단계: ${crackLevel} / 3`;
+  };
+
+  const applyFortuneResponse = (data) => {
+    statusMessage = data.message || null;
+
+    if (data.status === "available") {
+      currentFortune = null;
+      crackLevel = 0;
+      isLocked = false;
+      render();
+      return;
+    }
+
+    if (data.fortune) {
+      currentFortune = data.fortune;
+      crackLevel = data.status === "already_drawn" ? 3 : 0;
+      isLocked = data.status === "already_drawn";
+    }
+
+    render();
+  };
+
+  const fetchFortune = async (action = null) => {
+    const url = action ? `${fortuneEndpoint}?action=${action}` : fortuneEndpoint;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("포춘쿠키를 불러오지 못했어요.");
+    }
+    return response.json();
+  };
+
+  const drawFortune = async () => {
+    try {
+      const data = await fetchFortune("draw");
+      applyFortuneResponse(data);
+    } catch (error) {
+      fortuneHint.textContent = "잠시 후 다시 시도해주세요.";
+    }
+  };
+
+  const resetFortune = async () => {
+    try {
+      const data = await fetchFortune("reset");
+      applyFortuneResponse(data);
+    } catch (error) {
+      fortuneHint.textContent = "초기화에 실패했어요. 잠시 후 다시 시도해주세요.";
+    }
+  };
+
+  const crackCookie = () => {
+    if (!currentFortune) {
+      fortuneHint.textContent = "먼저 포춘쿠키를 뽑아주세요.";
+      return;
+    }
+
+    if (crackLevel >= 3) {
+      return;
+    }
+
+    crackLevel += 1;
+    render();
+  };
+
+  drawButton.addEventListener("click", () => {
+    drawFortune();
+  });
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      resetFortune();
+    });
+  }
+  cookie.addEventListener("click", crackCookie);
+  cookie.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      crackCookie();
+    }
+  });
+
+  fetchFortune()
+    .then((data) => applyFortuneResponse(data))
+    .catch(() => render());
+</script>
+{% endblock %}
