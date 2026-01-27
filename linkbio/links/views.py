@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.db.models import F
 from django.http import Http404, JsonResponse
-from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -77,7 +76,6 @@ def lucky(request):
         {
             "ad_profile": ad_profile,
             "ad_links": ad_links,
-            "kakao_javascript_key": settings.KAKAO_JAVASCRIPT_KEY,
         },
     )
 
