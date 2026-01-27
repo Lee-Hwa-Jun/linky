@@ -45,7 +45,18 @@
     <p class="fortune-hint" id="fortuneHint">아직 쿠키를 뽑지 않았어요.</p>
     <div class="fortune-actions">
       <button class="fortune-button" id="drawButton" type="button">포춘쿠키 뽑기</button>
-      </div>
+      <button
+        class="fortune-button fortune-button--ghost"
+        id="kakaoShareButton"
+        type="button"
+        data-share-title="오늘의 포춘쿠키"
+        data-share-description="포춘쿠키를 뽑아보세요!"
+        data-share-url="{{ request.build_absolute_uri }}"
+        {% if kakao_javascript_key %}data-kakao-key="{{ kakao_javascript_key }}"{% endif %}
+      >
+        카카오톡 공유하기
+      </button>
+    </div>
     <p class="fortune-counter" id="fortuneCounter">깨짐 단계: 0 / 3</p>
   </main>
 
@@ -101,6 +112,7 @@
   const fortuneHint = document.getElementById("fortuneHint");
   const fortuneCounter = document.getElementById("fortuneCounter");
   const fortuneEndpoint = cookie.dataset.endpoint;
+  const kakaoShareButton = document.getElementById("kakaoShareButton");
   const adLinks = document.querySelectorAll('.lucky-ad__card');
 
   let currentFortune = null;
@@ -213,6 +225,64 @@
     render();
   };
 
+  const ensureKakaoScript = (appKey) => {
+    if (!appKey || window.Kakao) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("카카오 SDK 로드 실패"));
+      document.head.appendChild(script);
+    });
+  };
+
+  const shareOnKakao = async () => {
+    if (!kakaoShareButton) return;
+    const appKey = kakaoShareButton.dataset.kakaoKey;
+    const title = kakaoShareButton.dataset.shareTitle || "포춘쿠키";
+    const description = kakaoShareButton.dataset.shareDescription || "포춘쿠키를 뽑아보세요!";
+    const url = kakaoShareButton.dataset.shareUrl || window.location.href;
+
+    if (!appKey) {
+      alert("카카오 공유 키가 설정되지 않았어요.");
+      return;
+    }
+
+    try {
+      await ensureKakaoScript(appKey);
+      if (!window.Kakao.isInitialized()) {
+        window.Kakao.init(appKey);
+      }
+      window.Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title,
+          description,
+          imageUrl: window.location.origin + "{% static 'image_src/fortune4.png' %}",
+          link: {
+            mobileWebUrl: url,
+            webUrl: url,
+          },
+        },
+        buttons: [
+          {
+            title: "포춘쿠키 보러가기",
+            link: {
+              mobileWebUrl: url,
+              webUrl: url,
+            },
+          },
+        ],
+        callback: () => {
+          handleLinkClickReset();
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      alert("카카오톡 공유에 실패했어요. 다시 시도해주세요.");
+    }
+  };
+
   drawButton.addEventListener("click", drawFortune);
   cookie.addEventListener("click", crackCookie);
   cookie.addEventListener("keydown", (event) => {
@@ -225,6 +295,10 @@
   adLinks.forEach(link => {
     link.addEventListener("click", handleLinkClickReset);
   });
+
+  if (kakaoShareButton) {
+    kakaoShareButton.addEventListener("click", shareOnKakao);
+  }
 
   // 초기 로딩 시에는 false(기본값)이므로, 이미 뽑은 상태면 바로 결과가 보임
   fetchFortune()
