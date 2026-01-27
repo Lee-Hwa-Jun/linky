@@ -1,10 +1,13 @@
 from datetime import timedelta
+import secrets
 
 from django.core.cache import cache
 from django.db.models import F
 from django.http import Http404, JsonResponse
+from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Link, Profile
 
@@ -76,6 +79,7 @@ def lucky(request):
         {
             "ad_profile": ad_profile,
             "ad_links": ad_links,
+            "kakao_javascript_key": settings.KAKAO_JAVASCRIPT_KEY,
         },
     )
 
@@ -1095,6 +1099,14 @@ def _fortune_cache_key(ip_address: str, date) -> str:
     return f"lucky:fortune:{ip_address}:{date.isoformat()}"
 
 
+def _share_token_cache_key(token: str) -> str:
+    return f"lucky:share:token:{token}"
+
+
+def _share_done_cache_key(token: str) -> str:
+    return f"lucky:share:done:{token}"
+
+
 def _seconds_until_midnight() -> int:
     now = timezone.localtime()
     tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -1141,3 +1153,35 @@ def fortune_status(request):
         )
 
     return JsonResponse({"status": "available"})
+
+
+def fortune_share_token(request):
+    ip_address = _get_client_ip(request)
+    today = timezone.localdate()
+    cache_key = _fortune_cache_key(ip_address, today)
+    token = secrets.token_urlsafe(16)
+    cache.set(_share_token_cache_key(token), cache_key, timeout=600)
+    return JsonResponse({"token": token})
+
+
+def fortune_share_status(request):
+    token = request.GET.get("token")
+    if not token:
+        return JsonResponse({"status": "missing"}, status=400)
+    if cache.get(_share_done_cache_key(token)):
+        cache.delete(_share_done_cache_key(token))
+        return JsonResponse({"status": "shared"})
+    return JsonResponse({"status": "pending"})
+
+
+@csrf_exempt
+def fortune_share_callback(request):
+    token = request.GET.get("token") or request.POST.get("token")
+    if not token:
+        return JsonResponse({"status": "missing"}, status=400)
+    fortune_cache_key = cache.get(_share_token_cache_key(token))
+    if fortune_cache_key:
+        cache.delete(fortune_cache_key)
+        cache.delete(_share_token_cache_key(token))
+        cache.set(_share_done_cache_key(token), True, timeout=600)
+    return JsonResponse({"status": "ok"})
