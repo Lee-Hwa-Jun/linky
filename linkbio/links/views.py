@@ -1117,6 +1117,17 @@ def fortune_status(request):
             }
         )
 
+    if action == "draw":
+        index = random.randrange(len(FORTUNES))
+        cache.set(cache_key, {"index": index}, timeout=_seconds_until_midnight())
+        return JsonResponse(
+            {
+                "status": "drawn",
+                "index": index,
+                "fortune": FORTUNES[index],
+            }
+        )
+
     if cached is not None:
         index = cached.get("index", 0)
         fortune = FORTUNES[index % len(FORTUNES)]
@@ -1126,17 +1137,6 @@ def fortune_status(request):
                 "index": index,
                 "fortune": fortune,
                 "message": "이미 오늘의 포춘쿠키를 뽑았어요. 내일 다시 와주세요!",
-            }
-        )
-
-    if action == "draw":
-        index = random.randrange(len(FORTUNES))
-        cache.set(cache_key, {"index": index}, timeout=_seconds_until_midnight())
-        return JsonResponse(
-            {
-                "status": "drawn",
-                "index": index,
-                "fortune": FORTUNES[index],
             }
         )
 
