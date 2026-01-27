@@ -52,8 +52,6 @@
         data-share-title="오늘의 포춘쿠키"
         data-share-description="포춘쿠키를 뽑아보세요!"
         data-share-url="{{ request.build_absolute_uri }}"
-        data-share-token-endpoint="{% url 'links:fortune_share_token' %}"
-        data-share-status-endpoint="{% url 'links:fortune_share_status' %}"
         {% if kakao_javascript_key %}data-kakao-key="{{ kakao_javascript_key }}"{% endif %}
       >
         카카오톡 공유하기
@@ -244,8 +242,6 @@
     const title = kakaoShareButton.dataset.shareTitle || "포춘쿠키";
     const description = kakaoShareButton.dataset.shareDescription || "포춘쿠키를 뽑아보세요!";
     const url = kakaoShareButton.dataset.shareUrl || window.location.href;
-    const shareTokenEndpoint = kakaoShareButton.dataset.shareTokenEndpoint;
-    const shareStatusEndpoint = kakaoShareButton.dataset.shareStatusEndpoint;
 
     if (!appKey) {
       alert("카카오 공유 키가 설정되지 않았어요.");
@@ -253,20 +249,10 @@
     }
 
     try {
-      if (!shareTokenEndpoint || !shareStatusEndpoint) {
-        alert("카카오 공유 설정이 완료되지 않았어요.");
-        return;
-      }
       await ensureKakaoScript(appKey);
       if (!window.Kakao.isInitialized()) {
         window.Kakao.init(appKey);
       }
-      const tokenResponse = await fetch(shareTokenEndpoint);
-      if (!tokenResponse.ok) throw new Error("공유 토큰 발급 실패");
-      const tokenData = await tokenResponse.json();
-      const shareToken = tokenData.token;
-      if (!shareToken) throw new Error("공유 토큰 없음");
-
       window.Kakao.Share.sendDefault({
         objectType: "feed",
         content: {
@@ -287,32 +273,10 @@
             },
           },
         ],
-        serverCallbackArgs: shareToken,
+        callback: () => {
+          handleLinkClickReset();
+        },
       });
-
-      statusMessage = "카카오톡 공유 완료 후 돌아오면 자동으로 초기화됩니다.";
-      render();
-
-      const pollStart = Date.now();
-      const pollInterval = setInterval(async () => {
-        if (Date.now() - pollStart > 60000) {
-          clearInterval(pollInterval);
-          return;
-        }
-        try {
-          const statusResponse = await fetch(`${shareStatusEndpoint}?token=${encodeURIComponent(shareToken)}`);
-          if (!statusResponse.ok) return;
-          const statusData = await statusResponse.json();
-          if (statusData.status === "shared") {
-            clearInterval(pollInterval);
-            statusMessage = "카카오톡 공유가 완료되어 초기화 되었어요!";
-            const data = await fetchFortune();
-            applyFortuneResponse(data);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }, 3000);
     } catch (error) {
       console.error(error);
       alert("카카오톡 공유에 실패했어요. 다시 시도해주세요.");
