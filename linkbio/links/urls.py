@@ -9,7 +9,6 @@ urlpatterns = [
     path("home/", views.landing, name="landing"),
     path("", views.lucky, name="lucky"),
     path("lotto/", views.lotto, name="lotto"),
-    path("lotto/submit/", views.lotto_submit, name="lotto_submit"),
     path("lucky/fortune/", views.fortune_status, name="fortune_status"),
     # path("", views.landing, name="landing"),
     path("<slug:slug>/links/", views.profile_links, name="profile_links"),

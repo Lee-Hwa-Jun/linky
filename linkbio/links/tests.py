@@ -134,7 +134,7 @@ class LottoViewTests(TestCase):
 
         with patch("linkbio.links.views.timezone.now", return_value=draw_time):
             response = self.client.post(
-                reverse("links:lotto_submit"),
+                reverse("links:lotto"),
                 data=json.dumps({"numbers": [1, 2, 3, 4, 5, 6]}),
                 content_type="application/json",
             )

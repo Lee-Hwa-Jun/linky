@@ -52,7 +52,6 @@ const state = {
   autoLinkConsumed: autoLinkConsumedOnLoad,
   adLinkUrl: null,
   adLinkRequest: null,
-  pendingAdWindow: null,
 };
 
 function clamp(value, min, max) {
@@ -128,68 +127,14 @@ async function preloadAdLink() {
   return state.adLinkRequest;
 }
 
-function writePopupLoadingShell(popup) {
-  try {
-    popup.document.write(
-      "<!doctype html><title>추천 링크 열기</title><body style='font-family:SUIT,sans-serif;padding:24px'>추천 링크를 준비하고 있습니다...</body>"
-    );
-    popup.document.close();
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function prepareAdWindow(triggerMode) {
-  if (state.autoLinkConsumed || state.pendingAdWindow) {
-    return;
-  }
-
-  const willReachFinalDraw =
-    triggerMode === "all" ? totalDrawnCount() < 6 : totalDrawnCount() === 5;
-
-  if (!willReachFinalDraw) {
-    return;
-  }
-
-  const popup = window.open("", "_blank");
-  if (!popup) {
-    return;
-  }
-
-  writePopupLoadingShell(popup);
-  state.pendingAdWindow = popup;
-}
-
-function closePendingAdWindow() {
-  if (state.pendingAdWindow && !state.pendingAdWindow.closed) {
-    state.pendingAdWindow.close();
-  }
-  state.pendingAdWindow = null;
-}
-
 async function openAdLinkAfterCompletion(shouldOpenAdLink) {
   if (!shouldOpenAdLink) {
-    closePendingAdWindow();
     return;
   }
 
   const adLinkUrl = state.adLinkUrl || (await preloadAdLink());
   if (!adLinkUrl) {
-    closePendingAdWindow();
     return;
-  }
-
-  const popup = state.pendingAdWindow;
-  state.pendingAdWindow = null;
-
-  if (popup && !popup.closed) {
-    try {
-      popup.opener = null;
-      popup.location = adLinkUrl;
-      return;
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   window.open(adLinkUrl, "_blank", "noopener");
@@ -234,7 +179,6 @@ async function finalizeCompletedTicket() {
   } catch (error) {
     state.currentTicketPersisted = false;
     setSaveStatus(error.message || "추첨 번호 저장에 실패했습니다.", "error");
-    closePendingAdWindow();
   }
 }
 
@@ -278,7 +222,6 @@ function renderResultBoard() {
 }
 
 function resetGame() {
-  closePendingAdWindow();
   state.availableNumbers = Array.from({ length: 45 }, (_, index) => index + 1);
   state.balls = state.availableNumbers.map((number) => makeBall(number));
   state.drawnNumbers = [];
@@ -861,12 +804,10 @@ function renderGameToText() {
 }
 
 function handleSingleDrawTrigger() {
-  prepareAdWindow("single");
   beginDraw();
 }
 
 function handleAutoDrawTrigger() {
-  prepareAdWindow("all");
   queueAutoDrawAll();
 }
 
