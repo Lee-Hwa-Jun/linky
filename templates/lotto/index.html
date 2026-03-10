@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로또 시뮬레이터 | 링크 모음</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=SUIT:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'lotto/styles.css' %}" />
+  </head>
+  <body>
+    <main
+      class="page-shell"
+      data-lotto-app
+      data-profile-links-url="{{ moonis_profile_links_url }}"
+      data-submit-url="{{ ticket_submit_url }}"
+      data-auto-link-consumed="{% if auto_link_consumed %}true{% else %}false{% endif %}"
+    >
+      <section class="app-shell">
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <p class="eyebrow">LIVE DRAW SIMULATOR</p>
+            <h1>6/45 로또 추첨기</h1>
+            <p class="subtitle">
+              생방송 추첨처럼 번호를 하나씩 뽑아 6개의 추첨번호를 완성합니다.
+            </p>
+          </div>
+
+          <div class="meta-strip">
+            <div class="meta-chip">
+              <span class="meta-chip__label">광고 링크</span>
+              <span class="meta-chip__value">
+                {% if auto_link_consumed %}이미 1회 사용됨{% else %}6번째 번호에서 1회 자동 오픈{% endif %}
+              </span>
+            </div>
+            <div class="meta-chip">
+              <span class="meta-chip__label">저장 정책</span>
+              <span class="meta-chip__value">완성된 6개 번호만 DB 저장</span>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <button id="draw-btn" class="action-btn primary" type="button">번호 뽑기</button>
+            <button id="draw-all-btn" class="action-btn secondary" type="button">한번에 다 뽑기</button>
+            <button id="reset-btn" class="action-btn secondary" type="button">리셋</button>
+          </div>
+
+          <div class="scoreboard">
+            <div class="score-block">
+              <span class="score-label">추첨 번호</span>
+              <div id="main-numbers" class="number-strip" aria-live="polite"></div>
+            </div>
+            <div class="score-block score-block--status">
+              <span class="score-label">저장 상태</span>
+              <p id="save-status" class="status-text">
+                6개 번호가 완성되면 해당 회차와 추첨일로 자동 저장됩니다.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="stage-panel">
+          <canvas
+            id="lotto-canvas"
+            width="960"
+            height="720"
+            aria-label="로또 추첨기 애니메이션"
+          ></canvas>
+        </section>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-panel">
+          <div class="section-head">
+            <div>
+              <p class="panel-eyebrow">MY HISTORY</p>
+              <h2>내 최근 추첨</h2>
+            </div>
+          </div>
+          {% if session_tickets %}
+            <div class="ticket-list">
+              {% for ticket in session_tickets %}
+                <div class="ticket-row">
+                  <div>
+                    <p class="ticket-row__title">{{ ticket.draw_round }}회 / {{ ticket.draw_date_code }}</p>
+                    <p class="ticket-row__numbers">{{ ticket.numbers }}</p>
+                  </div>
+                  <div class="ticket-row__meta">
+                    {% if ticket.prize_rank == 0 %}
+                      <span class="rank-badge">낙첨</span>
+                    {% elif ticket.prize_rank %}
+                      <span class="rank-badge rank-badge--hit">{{ ticket.prize_rank }}등</span>
+                    {% else %}
+                      <span class="rank-badge">결과 대기</span>
+                    {% endif %}
+                    <span class="ticket-row__time">{{ ticket.created_at }}</span>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="empty-copy">아직 저장된 내 추첨 번호가 없습니다.</p>
+          {% endif %}
+        </article>
+
+        <article class="info-panel">
+          <div class="section-head">
+            <div>
+              <p class="panel-eyebrow">DRAW RESULTS</p>
+              <h2>실제 추첨 결과</h2>
+            </div>
+            {% if available_results %}
+              <div class="round-pills">
+                {% for result in available_results %}
+                  <a
+                    class="round-pill{% if selected_result and result.id == selected_result.id %} round-pill--active{% endif %}"
+                    href="?round={{ result.draw_round }}"
+                  >
+                    {{ result.draw_round }}회
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          {% if selected_result %}
+            <div class="result-summary">
+              <div>
+                <p class="result-summary__label">추첨일</p>
+                <p class="result-summary__value">{{ selected_result.draw_date_code }}</p>
+              </div>
+              <div>
+                <p class="result-summary__label">당첨번호</p>
+                <p class="result-summary__value">
+                  {% for number in selected_result.winning_numbers %}
+                    <span class="inline-number">{{ number }}</span>
+                  {% endfor %}
+                  {% if selected_result.bonus_number %}
+                    <span class="bonus-chip">보너스 {{ selected_result.bonus_number }}</span>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+
+            <div class="winner-grid">
+              {% for group in winner_groups %}
+                <section class="winner-card">
+                  <div class="winner-card__head">
+                    <h3>{{ group.label }}</h3>
+                    <span>{{ group.count }}명</span>
+                  </div>
+                  {% if group.tickets %}
+                    <div class="winner-list">
+                      {% for ticket in group.tickets %}
+                        <div class="winner-row">
+                          <p>{{ ticket.numbers }}</p>
+                          <span>#{{ ticket.id }} / {{ ticket.created_at }}</span>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <p class="empty-copy">아직 {{ group.label }} 당첨 티켓이 없습니다.</p>
+                  {% endif %}
+                </section>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="empty-copy">아직 저장된 실제 추첨 결과가 없습니다. 관리자에서 회차별 결과를 등록하면 여기서 당첨자 리스트를 볼 수 있습니다.</p>
+          {% endif %}
+        </article>
+      </section>
+    </main>
+
+    <script defer src="{% static 'lotto/main.js' %}"></script>
+  </body>
+</html>
