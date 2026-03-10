@@ -8,8 +8,8 @@ const resetButton = document.querySelector("#reset-btn");
 const mainNumbersEl = document.querySelector("#main-numbers");
 const saveStatusEl = document.querySelector("#save-status");
 
-const profileLinksUrl = appRoot?.dataset.profileLinksUrl || "";
 const ticketSubmitUrl = appRoot?.dataset.submitUrl || "";
+const adOpenUrl = appRoot?.dataset.adOpenUrl || "";
 const autoLinkConsumedOnLoad = appRoot?.dataset.autoLinkConsumed === "true";
 
 const WIDTH = canvas.width;
@@ -50,8 +50,6 @@ const state = {
   lastTimestamp: 0,
   currentTicketPersisted: false,
   autoLinkConsumed: autoLinkConsumedOnLoad,
-  adLinkUrl: null,
-  adLinkRequest: null,
 };
 
 function clamp(value, min, max) {
@@ -94,50 +92,19 @@ function getCookie(name) {
   return "";
 }
 
-async function preloadAdLink() {
-  if (state.autoLinkConsumed || !profileLinksUrl) {
-    return null;
-  }
-
-  if (state.adLinkUrl) {
-    return state.adLinkUrl;
-  }
-
-  if (!state.adLinkRequest) {
-    state.adLinkRequest = fetch(profileLinksUrl, { credentials: "same-origin" })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("링크 API 호출 실패");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        state.adLinkUrl = data.links || null;
-        return state.adLinkUrl;
-      })
-      .catch((error) => {
-        console.error(error);
-        return null;
-      })
-      .finally(() => {
-        state.adLinkRequest = null;
-      });
-  }
-
-  return state.adLinkRequest;
-}
-
-async function openAdLinkAfterCompletion(shouldOpenAdLink) {
-  if (!shouldOpenAdLink) {
+function openAdLinkOnFirstInteraction() {
+  if (state.autoLinkConsumed || !adOpenUrl) {
     return;
   }
 
-  const adLinkUrl = state.adLinkUrl || (await preloadAdLink());
-  if (!adLinkUrl) {
+  if (totalDrawnCount() !== 0) {
     return;
   }
 
-  window.open(adLinkUrl, "_blank", "noopener");
+  const popup = window.open(adOpenUrl, "_blank", "noopener");
+  if (popup) {
+    state.autoLinkConsumed = true;
+  }
 }
 
 async function submitCompletedTicket(numbers) {
@@ -165,17 +132,14 @@ async function finalizeCompletedTicket() {
   }
 
   state.currentTicketPersisted = true;
-  const shouldOpenAdLink = !state.autoLinkConsumed;
 
   try {
     setSaveStatus("추첨 번호를 저장하는 중입니다.");
     const payload = await submitCompletedTicket(state.drawnNumbers);
-    state.autoLinkConsumed = true;
     setSaveStatus(
       `${payload.draw_round}회 / ${payload.draw_date} 추첨으로 저장되었습니다.`,
       "success"
     );
-    await openAdLinkAfterCompletion(shouldOpenAdLink);
   } catch (error) {
     state.currentTicketPersisted = false;
     setSaveStatus(error.message || "추첨 번호 저장에 실패했습니다.", "error");
@@ -791,7 +755,6 @@ function renderGameToText() {
     ticket: {
       currentTicketPersisted: state.currentTicketPersisted,
       autoLinkConsumed: state.autoLinkConsumed,
-      hasPrefetchedAdLink: Boolean(state.adLinkUrl),
       saveStatus: saveStatusEl?.textContent || "",
     },
     controls: {
@@ -804,10 +767,12 @@ function renderGameToText() {
 }
 
 function handleSingleDrawTrigger() {
+  openAdLinkOnFirstInteraction();
   beginDraw();
 }
 
 function handleAutoDrawTrigger() {
+  openAdLinkOnFirstInteraction();
   queueAutoDrawAll();
 }
 
@@ -840,5 +805,4 @@ window.advanceTime = async (ms) => {
 
 resetGame();
 render();
-void preloadAdLink();
 requestAnimationFrame(frame);

@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 
 from .lotto import get_draw_metadata, normalize_lotto_numbers
 from .models import Link, LottoDrawResult, LottoTicket, Profile
@@ -65,10 +66,18 @@ def track_link(request, slug: str, link_id: int):
     return redirect(link.url)
 
 
+def _random_profile_link_url(slug: str) -> str | None:
+    profile = Profile.objects.active().prefetch_related("links").filter(slug=slug).first()
+    if not profile:
+        return None
+
+    links = list(profile.links.values_list("url", flat=True))
+    return random.choice(links) if links else None
+
+
 def profile_links(request, slug: str):
     profile = get_object_or_404(Profile.objects.active(), slug=slug)
-    links = list(profile.links.values_list("url", flat=True))
-    return JsonResponse({"links": random.choice(links) if links else None})
+    return JsonResponse({"links": _random_profile_link_url(profile.slug)})
 
 
 def lucky(request):
@@ -123,42 +132,7 @@ def _build_lotto_winner_groups(draw_result: LottoDrawResult | None) -> list[dict
 
 @ensure_csrf_cookie
 def lotto(request):
-    session_key = _ensure_session_key(request)
-
-    if request.method == "POST":
-        try:
-            payload = json.loads(request.body or "{}")
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "잘못된 요청 본문입니다."}, status=400)
-
-        try:
-            ticket_numbers = normalize_lotto_numbers(payload.get("numbers", []))
-        except ValueError as error:
-            return JsonResponse({"error": str(error)}, status=400)
-
-        draw_date, draw_date_code, draw_round = get_draw_metadata(timezone.now())
-        ticket = LottoTicket.objects.create(
-            session_key=session_key,
-            client_ip=_get_client_ip(request),
-            user_agent=request.META.get("HTTP_USER_AGENT", "")[:255],
-            ticket_numbers=ticket_numbers,
-            draw_date=draw_date,
-            draw_date_code=draw_date_code,
-            draw_round=draw_round,
-        )
-
-        request.session["lotto_auto_link_opened"] = True
-        request.session.modified = True
-
-        return JsonResponse(
-            {
-                "ticket_id": ticket.id,
-                "draw_round": ticket.draw_round,
-                "draw_date": ticket.draw_date_code,
-                "numbers": ticket.ticket_numbers,
-                "prize_rank": ticket.prize_rank,
-            }
-        )
+    _ensure_session_key(request)
 
     results_qs = LottoDrawResult.objects.order_by("-draw_date", "-draw_round")
     selected_round = request.GET.get("round")
@@ -175,15 +149,73 @@ def lotto(request):
         request,
         "lotto/index.html",
         {
-            "auto_link_consumed": bool(request.session.get("lotto_auto_link_opened", False)),
-            "moonis_profile_links_url": reverse("links:profile_links", args=["moonis"]),
-            "ticket_submit_url": reverse("links:lotto"),
+            "auto_link_consumed": _lotto_auto_link_consumed_today(request),
+            "ticket_submit_url": reverse("links:lotto_submit"),
+            "lotto_ad_open_url": reverse("links:lotto_ad_open"),
             "available_results": list(results_qs[:12]),
             "selected_result": selected_result,
             "winner_groups": winner_groups,
             "session_tickets": [_serialize_ticket(ticket) for ticket in session_tickets],
         },
     )
+
+
+def _lotto_auto_link_date_code() -> str:
+    return timezone.localdate().strftime("%Y%m%d")
+
+
+def _lotto_auto_link_consumed_today(request) -> bool:
+    return request.session.get("lotto_auto_link_opened_on") == _lotto_auto_link_date_code()
+
+
+@require_POST
+def lotto_submit(request):
+    session_key = _ensure_session_key(request)
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "잘못된 요청 본문입니다."}, status=400)
+
+    try:
+        ticket_numbers = normalize_lotto_numbers(payload.get("numbers", []))
+    except ValueError as error:
+        return JsonResponse({"error": str(error)}, status=400)
+
+    draw_date, draw_date_code, draw_round = get_draw_metadata(timezone.now())
+    ticket = LottoTicket.objects.create(
+        session_key=session_key,
+        client_ip=_get_client_ip(request),
+        user_agent=request.META.get("HTTP_USER_AGENT", "")[:255],
+        ticket_numbers=ticket_numbers,
+        draw_date=draw_date,
+        draw_date_code=draw_date_code,
+        draw_round=draw_round,
+    )
+
+    return JsonResponse(
+        {
+            "ticket_id": ticket.id,
+            "draw_round": ticket.draw_round,
+            "draw_date": ticket.draw_date_code,
+            "numbers": ticket.ticket_numbers,
+            "prize_rank": ticket.prize_rank,
+        }
+    )
+
+
+def lotto_ad_open(request):
+    _ensure_session_key(request)
+    if _lotto_auto_link_consumed_today(request):
+        return redirect("links:lotto")
+
+    ad_link_url = _random_profile_link_url("moonis")
+    if not ad_link_url:
+        return redirect("links:lotto")
+
+    request.session["lotto_auto_link_opened_on"] = _lotto_auto_link_date_code()
+    request.session.modified = True
+    return redirect(ad_link_url)
 
 
 FORTUNES = [

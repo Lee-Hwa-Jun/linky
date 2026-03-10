@@ -127,6 +127,8 @@ class LottoLogicTests(TestCase):
 class LottoViewTests(TestCase):
     def setUp(self):
         self.client = Client()
+        self.moonis = Profile.objects.create(name="Moonis", slug="moonis", is_active=True)
+        Link.objects.create(profile=self.moonis, label="쿠팡", url="https://example.com/coupang")
 
     def test_submit_stores_ticket_with_expected_draw_metadata(self):
         seoul = ZoneInfo("Asia/Seoul")
@@ -134,7 +136,7 @@ class LottoViewTests(TestCase):
 
         with patch("linkbio.links.views.timezone.now", return_value=draw_time):
             response = self.client.post(
-                reverse("links:lotto"),
+                reverse("links:lotto_submit"),
                 data=json.dumps({"numbers": [1, 2, 3, 4, 5, 6]}),
                 content_type="application/json",
             )
@@ -145,7 +147,26 @@ class LottoViewTests(TestCase):
 
         self.assertEqual(ticket.draw_date_code, "20260321")
         self.assertEqual(ticket.draw_round, 1216)
-        self.assertTrue(self.client.session["lotto_auto_link_opened"])
+        self.assertNotIn("lotto_auto_link_opened_on", self.client.session)
+
+    def test_lotto_ad_open_marks_today_and_redirects(self):
+        with patch("linkbio.links.views.timezone.localdate", return_value=date(2026, 3, 10)):
+            response = self.client.get(reverse("links:lotto_ad_open"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "https://example.com/coupang")
+        self.assertEqual(self.client.session["lotto_auto_link_opened_on"], "20260310")
+
+    def test_lotto_page_resets_auto_open_flag_next_day(self):
+        session = self.client.session
+        session["lotto_auto_link_opened_on"] = "20260309"
+        session.save()
+
+        with patch("linkbio.links.views.timezone.localdate", return_value=date(2026, 3, 10)):
+            response = self.client.get(reverse("links:lotto"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-auto-link-consumed="false"')
 
     def test_result_save_recalculates_matching_tickets(self):
         ticket = LottoTicket.objects.create(
